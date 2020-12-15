@@ -1,1 +1,5 @@
-# lightsheet_rust
+
+== release 빌드 ==
+```
+cargo build --release
+```

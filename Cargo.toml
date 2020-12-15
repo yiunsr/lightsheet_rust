@@ -1,0 +1,19 @@
+[package]
+name = "lightsheet_rust"
+version = "0.1.0"
+authors = ["yiunsr <yiunsr@hanmail.net>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+csv = "1.1"
+chardetng = "0.1.10"
+encoding_rs = "0.8.26"
+encoding_rs_io = "0.1.7"
+# web-view = { version = "0.7", features = ["edge"] }
+#![windows_subsystem = "windows"]
+
+[dependencies.rusqlite]
+version = "0.24.2"
+features = ["bundled"]
