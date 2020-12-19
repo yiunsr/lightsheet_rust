@@ -1,0 +1,74 @@
+{
+    // IntelliSense를 사용하여 가능한 특성에 대해 알아보세요.
+    // 기존 특성에 대한 설명을 보려면 가리킵니다.
+    // 자세한 내용을 보려면 https://go.microsoft.com/fwlink/?linkid=830387을(를) 방문하세요.
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'lightsheet_rust'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=lightsheet_rust",
+                    "--package=lightsheet_rust"
+                ],
+                "filter": {
+                    "name": "lightsheet_rust",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'lightsheet_rust'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=lightsheet_rust",
+                    "--package=lightsheet_rust"
+                ],
+                "filter": {
+                    "name": "lightsheet_rust",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Run Test Debugger",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/debug/buggin-70708b3916187eeb.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "preLaunchTask": "cargo test build",
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug selected unit test",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                ],
+                "filter": {
+                    "name": "libthat",
+                    "kind": "lib"
+                }
+            },
+            "args": ["${selectedText}"],
+            "cwd": "${workspaceFolder}"
+        },
+    ]
+}

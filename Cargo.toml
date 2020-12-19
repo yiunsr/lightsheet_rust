@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-csv = "1.1"
+csv = "1.1.5"
 chardetng = "0.1.10"
 encoding_rs = "0.8.26"
 encoding_rs_io = "0.1.7"
