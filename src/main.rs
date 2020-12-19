@@ -53,12 +53,10 @@ fn csv_open(file_path: &str) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
-    let s = datatable::db_utils::colname(10);
-    println!("{}", s);
-
-    let file_path = String::from("D:\\workspace\\vscode2\\hello_cargo\\res\\경상남도.txt");
+    //let file_path = String::from("D:\\workspace\\vscode2\\hello_cargo\\res\\경상남도.txt");
     // let file_path = String::from("D:\\workspace\\vscode2\\hello_cargo\\res\\경기도.csv");
     // let file_path = String::from("D:\\res\\csv_sample\\1994.csv");
+    let file_path = String::from(".\\res\\auction_202011.csv");
 
     let now = Instant::now();
     if let Err(err) = csv_open(&file_path) {
