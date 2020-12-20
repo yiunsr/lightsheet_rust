@@ -1,16 +1,3 @@
-
-use rusqlite::Connection;
-
-pub type Callback = fn(u32);
-
-pub struct TableInfo {
-    conn: Connection,
-	table_name: String,
-	col_len: u32,
-	row_len: u32,
-}
-
-
 pub const DATABASE_PATH:&str="./data.db";
 
 // pub fn OpenTableFile(filepath:String, cb:Callback) -> TableInfo {

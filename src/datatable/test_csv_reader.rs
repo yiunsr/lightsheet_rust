@@ -1,6 +1,6 @@
 use super::csv_reader;
 use std::time::Instant;
-use std::str;
+use std::fs::File;
 
 #[test]
 fn test_get_col_sep(){
@@ -25,9 +25,21 @@ fn test_csv_open(){
     // let file_path = String::from("D:\\res\\csv_sample\\1994.csv");
     // let file_path = String::from(".\\res\\auction_202011.csv");
     let now = Instant::now();
-    if let Err(err) = csv_reader::csv_open(&file_path) {
+    let mut file= &mut File::open(file_path).unwrap();
+    if let Err(err) = csv_reader::csv_open(file) {
         println!("error running example: {}", err);
         assert_eq!(true, false);
     }
     println!("{}", now.elapsed().as_secs_f64());
 }
+
+
+fn test_callback(percent:u32){
+    println!("percent : {}%", percent);
+}
+// #[test]
+// fn test_read_csv(){
+//     let file_path = "D:\\workspace\\vscode2\\hello_cargo\\res\\경상남도.txt".to_string();
+//     let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tt.db".to_string();
+//     csv_reader::read_csv(db_path, &file_path, test_callback);
+// }
