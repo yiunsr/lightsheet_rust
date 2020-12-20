@@ -50,7 +50,6 @@ pub fn insert_query(tablename:String, col_count: u32) -> String {
 
 pub fn select_query(tablename:String, col_count:u32, where_:String, group:String, having: String) -> String {
     let mut query = String::from("Select id, ");
-    let col_names_query = String::new();
     let mut col_names_query = String::new();
     for i in 0..col_count-1 {
         col_names_query.push_str(&colname(i));
@@ -74,4 +73,20 @@ pub fn select_query(tablename:String, col_count:u32, where_:String, group:String
     }
 	log::info!("select_query : {}", query);
 	query
+}
+
+pub fn distinct_col_query(tablename:String, col_index: u32) -> String {
+    let mut query = String::from("Select distinct ");
+    query.push_str(&colname(col_index));
+    query.push_str(" From ");
+    query.push_str(&tablename);
+	return query
+}
+
+pub fn select_col_query(tablename:String, col_index:u32) -> String {
+    let mut query = "Select ".to_string();
+    query.push_str(&colname(col_index));
+    query.push_str(" From ");
+    query.push_str(&tablename);
+	return query
 }

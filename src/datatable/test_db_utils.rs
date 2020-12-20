@@ -30,3 +30,19 @@ fn test_select_query(){
         String::from(""), String::from(""), String::from(""));
     assert_eq!(extected_query, query);
 }
+
+#[test]
+fn test_distinct_col_query(){
+    let table_name = String::from("datatable");
+    let query = db_utils::distinct_col_query(table_name, 2);
+    let extected_query = "Select distinct c_2 From datatable";
+    assert_eq!(extected_query, query);   
+}
+
+#[test]
+fn test_select_col_query(){
+    let table_name = String::from("datatable");
+    let query = db_utils::select_col_query(table_name, 2);
+    let extected_query = "Select c_2 From datatable";
+    assert_eq!(extected_query, query);   
+}
