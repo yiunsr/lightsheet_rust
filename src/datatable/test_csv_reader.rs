@@ -37,9 +37,9 @@ fn test_csv_open(){
 fn test_callback(percent:u32){
     println!("percent : {}%", percent);
 }
-// #[test]
-// fn test_read_csv(){
-//     let file_path = "D:\\workspace\\vscode2\\hello_cargo\\res\\경상남도.txt".to_string();
-//     let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tt.db".to_string();
-//     csv_reader::read_csv(db_path, &file_path, test_callback);
-// }
+#[test]
+fn test_read_csv(){
+    let file_path = "D:\\workspace\\vscode2\\hello_cargo\\res\\경상남도.txt".to_string();
+    let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tt.db".to_string();
+    csv_reader::read_csv(db_path, file_path, test_callback);
+}
