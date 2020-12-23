@@ -26,10 +26,13 @@ fn test_csv_open(){
     // let file_path = String::from(".\\res\\auction_202011.csv");
     let now = Instant::now();
     let mut file= &mut File::open(file_path).unwrap();
-    if let Err(err) = csv_reader::csv_open(file) {
-        println!("error running example: {}", err);
-        assert_eq!(true, false);
-    }
+    let result_open = csv_reader::csv_open(file);
+    let result_open = match result_open{
+        Ok(r) => r,
+        Err(err) =>{
+            panic!("Problem csv_open: {:?}", err)
+        }
+    };
     println!("{}", now.elapsed().as_secs_f64());
 }
 
@@ -37,9 +40,27 @@ fn test_csv_open(){
 fn test_callback(percent:u32){
     println!("percent : {}%", percent);
 }
+
 #[test]
 fn test_read_csv(){
+    println!("한국어 테스트");
     let file_path = "D:\\workspace\\vscode2\\hello_cargo\\res\\경상남도.txt".to_string();
     let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tt.db".to_string();
     csv_reader::read_csv(db_path, file_path, test_callback);
 }
+
+#[test]
+fn test_read_csv_01(){
+    let file_path = "D:\\workspace\\vscode\\lightsheet_rust\\res\\euc_kr.csv".to_string();
+    let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tt.db".to_string();
+    let ret = csv_reader::read_csv(db_path, file_path, test_callback);
+    // match ret {
+    //     Ok(file) => file,
+    //     Err(err) => {
+    //         println!("Err:  {:?}", err);
+    //         panic!("Problem read_csv: {:?}", err);
+    //     },
+    // };
+}
+
+

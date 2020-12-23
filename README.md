@@ -4,6 +4,12 @@
 cargo build --release
 ```
 
+== vscode 내 한국어 출력 ==
+* vscode 내 터미널 UTF8 설정한다. 
+```
+chcp 65001
+```
+
 == csv 파일 경로 ==
 * 1994.csv
   * Data Expo 2009: Airline on time data

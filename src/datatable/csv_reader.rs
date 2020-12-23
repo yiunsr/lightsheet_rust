@@ -7,9 +7,6 @@ use std::str;
 use std::boxed::Box;
 use std::convert::TryFrom;
 use csv::Reader;
-use csv::StringRecord;
-use csv::StringRecordsIter;
-use csv::Position;
 use log;
 use chardetng::EncodingDetector;
 use encoding_rs_io::DecodeReaderBytes;
@@ -39,13 +36,15 @@ macro_rules! skip_fail {
     };
 }
 
+
 pub fn csv_open(file: &mut File) -> 
-		Result<Reader<DecodeReaderBytes<&mut File, Vec<u8>>>, Box<dyn Error>> {
+		Result< (Reader<DecodeReaderBytes<&mut File, Vec<u8>>>, u32), Box<dyn Error>> {
     
     let mut buffer = [0; 1024*10];
 
     file.read(&mut buffer)?;
-    file.seek(SeekFrom::Start(0))?;
+	file.seek(SeekFrom::Start(0))?;
+	
 
     let mut det = EncodingDetector::new();
     det.feed(&buffer, true);
@@ -53,7 +52,8 @@ pub fn csv_open(file: &mut File) ->
     log::info!("file characterset detect: {}", enc.name());
 
     let str_buffer = String::from_utf8_lossy(&buffer);
-    let sep = get_col_sep(&str_buffer);
+	let sep = get_col_sep(&str_buffer);
+	let col_count = get_col_count(&str_buffer, sep);
     
     let transcoded = DecodeReaderBytesBuilder::new()
         .encoding(Some(enc))
@@ -62,7 +62,7 @@ pub fn csv_open(file: &mut File) ->
     let rdr = csv::ReaderBuilder::new()
         .delimiter(sep)
         .from_reader(transcoded);
-	Ok(rdr)
+	Ok((rdr, col_count))
 }
 
 pub fn get_col_sep(readedstr:&str) -> u8 {
@@ -78,117 +78,88 @@ pub fn get_col_sep(readedstr:&str) -> u8 {
 	b'|'
 }
 
+pub fn get_col_count(readedstr:&str, sep:u8) -> u32 {
+	let mut lines = readedstr.lines();
+	let line = lines.next().unwrap();
+	let sep_count = line.matches(sep as char).count();
+	sep_count as u32 + 1
+}
+
 // fn read_csv(dbfile: String, csvfile: String, cb:Callback
 // 		) -> Result<Vec<Option<StringRecord>>, Box<dyn Error>> {
-pub fn read_csv(dbfile: String, csvfile: String, cb:Callback) {
+pub fn read_csv(dbfile: String, csvfile: String, cb:Callback) ->Result<(), Box<dyn Error>>{
 
     // Read CSV File
     
     // 딱히 삭제가 안되더라도 무시한다. 
-	fs::remove_file(dbfile);
+	fs::remove_file(dbfile.clone());
 	
-	let mut file= &mut File::open(csvfile).unwrap();
+	let file= &mut File::open(csvfile).unwrap();
+	//let file_pos = file.seek(SeekFrom::Current(0)).unwrap();
 	let total_file_byte = file.metadata().unwrap().len();
-	let reader = csv_open(file).unwrap();
+	let (reader, col_count) = csv_open(file)?;
 	let mut iter = reader.into_records();
-	let mut pos = Position::new();
 	let mut old_percent = 0u32;
-	loop {
-        // Read the position immediately before each record.
-		let next_pos = iter.reader().position().clone();
-		let item = iter.next();
-        if item.is_none() {
-            break;
-		}
-		//let record = skip_fail!(item);
-		// println!("{:?}", item);
-		let read_byte = next_pos.byte();
-		let cur_percent:u32 = u32::try_from(read_byte / total_file_byte * 100).unwrap();
-		if cur_percent != old_percent {
-			cb(cur_percent);
-		}
-		old_percent = cur_percent;
-    }
-	// for result in iter {
-	// 	let record = skip_fail!(result);
-	// 	let position = iter.reader().position().clone();
 
-	// 	println!("{:?}", record);
-	// 	println!("{}", position.byte());
-    // }
+	// 메모리 데이터베이스
+	// let conn = Connection::open_in_memory()?;
+	let mut conn = Connection::open(dbfile)?;
+	conn.pragma_update(None, "synchronous", &"OFF".to_string());
+	conn.pragma_update(None, "journal_mode", &"MEMORY".to_string());
+	conn.pragma_update(None, "cache_size", &"10000".to_string());
+	conn.pragma_update(None, "locking_mode", &"EXCLUSIVE".to_string());
+	conn.pragma_update(None, "temp_store", &"MEMORY".to_string());
+	// // https://blog.devart.com/increasing-sqlite-performance.html
 
+	let table_name = "datatable".to_string();
 	// let rec = records[0].unwrap();
-	// let col_count = u32::try_from(rec.len()).unwrap();
+	let c_sql = db_utils::create_query(&table_name, col_count);
+	conn.execute(&c_sql, NO_PARAMS)?;
 
-	// // 메모리 데이터베이스
-	// // let conn = Connection::open_in_memory()?;
-	// let conn = Connection::open(dbfile)?;
-	// conn.execute("PRAGMA synchronous = OFF", NO_PARAMS);
-	// conn.execute("PRAGMA journal_mode = MEMORY", NO_PARAMS);
-	// conn.execute("PRAGMA cache_size = 10000", NO_PARAMS);
-	// conn.execute("PRAGMA locking_mode = EXCLUSIVE", NO_PARAMS);
-	// conn.execute("PRAGMA temp_store = MEMORY", NO_PARAMS);
-	// // // https://blog.devart.com/increasing-sqlite-performance.html
+	let i_query = db_utils::insert_query(&table_name, col_count);
 
-	// let table_name = "datatable".to_string();
-	// let c_sql = db_utils::create_query(table_name, col_count);
-	// conn.execute(&c_sql, NO_PARAMS);
+	let tx = conn.transaction()?;
+	{
+		let mut i_stmt = tx.prepare(&i_query)?;
+		let mut row_index:u32 = 1;
+		// conn.execute("Begin;", NO_PARAMS)?;
 
-	// let i_query = db_utils::insert_query(table_name, col_count);
+		loop {
+			// Read the position immediately before each record.
+			let next_pos = iter.reader().position().clone();
+			let item = iter.next();
+			if item.is_none() {
+				break;
+			}
+			let mut fields:Vec<String> = Vec::new();
+			let record = item.unwrap()?;
+			fields.push(row_index.to_string());
+			for field in record.iter() {
+				println!("{}", String::from(field));
+				fields.push(String::from(field));
+			}
+			row_index = row_index + 1;
+			i_stmt.query(fields)?;
+			
+			let reader_ = iter.reader_mut().get_mut();
+			// reader.rdr.nread 에 접근해서 read 한 byte 를 접근할 수 있으면 좋겠다.
+			//let rdr = reader_.rdr;
+			let read_byte = next_pos.byte();
+			let cur_percent:u32 = u32::try_from(read_byte * 100 / total_file_byte ).unwrap();
+			if cur_percent != old_percent {
+				if cur_percent <= 100{
+					cb(cur_percent);
+				}
+				
+			}
+			old_percent = cur_percent;
+		}
+	}
+	tx.commit()?;
+	//conn.execute("Commit;", NO_PARAMS)?;
 
-	// let total_count = records.len();
-	// let percent = 0u32;
-	// let newpercent = 0u32;
-	// let tx = conn.transaction()?;
-	// let mut stmt = tx.prepare(&i_query)?;
-	// stmt.execute(&["Joe Smith"])?;
+	Ok(())
 	
-	// let row_index = 0;
-	// for record in records.iter() {
-	// 	newpercent = (row_index * 100) / total_count;
-	// 	if percent != newpercent {
-	// 		cb(newpercent);
-	// 		percent = newpercent;
-	// 	}
-	// interface_record := make([]interface{}, col_count+1)
-	// interface_record[0] = row_index + 1
-	// for i, v := range record {
-	// 	if i == col_count {
-	// 		break
-	// 	}
-	// 	interface_record[i+1] = v
-	// }
-	// for j := len(record); j < col_count; j++ {
-	// 	interface_record[j+1] = ""
-	// }
-
-	// tx.commit();
-	// for row_index, record := range records {
-	// 	newpercent = (row_index * 100) / total_count
-	// 	if percent != newpercent {
-	// 		cb(newpercent)
-	// 		percent = newpercent
-	// 	}
-	// 	interface_record := make([]interface{}, col_count+1)
-	// 	interface_record[0] = row_index + 1
-	// 	for i, v := range record {
-	// 		if i == col_count {
-	// 			break
-	// 		}
-	// 		interface_record[i+1] = v
-	// 	}
-	// 	for j := len(record); j < col_count; j++ {
-	// 		interface_record[j+1] = ""
-	// 	}
-
-	// 	err := stmt.Exec(interface_record...)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-
-	// }
-
-	// db.Commit()
 
 	// elapsed := time.Since(start)
 	// log.Printf("Total count :  %d", total_count)
