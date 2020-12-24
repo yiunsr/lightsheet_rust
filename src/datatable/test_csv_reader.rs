@@ -27,7 +27,7 @@ fn test_csv_open(){
     let now = Instant::now();
     let mut file= &mut File::open(file_path).unwrap();
     let result_open = csv_reader::csv_open(file);
-    let result_open = match result_open{
+    let _result_open = match result_open{
         Ok(r) => r,
         Err(err) =>{
             panic!("Problem csv_open: {:?}", err)
@@ -53,7 +53,7 @@ fn test_read_csv(){
 fn test_read_csv_01(){
     let file_path = "D:\\workspace\\vscode\\lightsheet_rust\\res\\euc_kr.csv".to_string();
     let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tt.db".to_string();
-    let ret = csv_reader::read_csv(db_path, file_path, test_callback);
+    let _ret = csv_reader::read_csv(db_path, file_path, test_callback);
     // match ret {
     //     Ok(file) => file,
     //     Err(err) => {
