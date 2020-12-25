@@ -1,8 +1,10 @@
-use std::io::{Seek, SeekFrom};
+use std::io;
+use std::io::Seek;
+use std::io::SeekFrom;
+use std::io::Read;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
-use std::io::Read;
 use std::str;
 use std::boxed::Box;
 use std::convert::TryFrom;
@@ -36,7 +38,6 @@ macro_rules! skip_fail {
     };
 }
 
-
 pub fn csv_open(file: &mut File) -> 
 		Result< (Reader<DecodeReaderBytes<&mut File, Vec<u8>>>, u32), Box<dyn Error>> {
     
@@ -55,9 +56,13 @@ pub fn csv_open(file: &mut File) ->
 	let sep = get_col_sep(&str_buffer);
 	let col_count = get_col_count(&str_buffer, sep);
     
-    let transcoded = DecodeReaderBytesBuilder::new()
+    // let transcoded = DecodeReaderBytesBuilder::new()
+    //     .encoding(Some(enc))
+	//     .build(file);
+
+	let transcoded = DecodeReaderBytesBuilder::new()
         .encoding(Some(enc))
-        .build(file);
+	    .build_with_buffer(file, vec![0; 1024 * (1 << 10)]).unwrap();
     
     let rdr = csv::ReaderBuilder::new()
         .delimiter(sep)
@@ -122,11 +127,10 @@ pub fn read_csv(dbfile: String, csvfile: String, cb:Callback) ->Result<(TableInf
 	let tx = conn.transaction()?;
 	{
 		let mut i_stmt = tx.prepare(&i_query)?;
-		// conn.execute("Begin;", NO_PARAMS)?;
 
 		loop {
 			// Read the position immediately before each record.
-			let next_pos = iter.reader().position().clone();
+			// let next_pos = iter.reader().position().clone();
 			let item = iter.next();
 			if item.is_none() {
 				break;
@@ -143,11 +147,16 @@ pub fn read_csv(dbfile: String, csvfile: String, cb:Callback) ->Result<(TableInf
 			
 			let reader_ = iter.reader_mut().get_mut();
 			// reader.rdr.nread 에 접근해서 read 한 byte 를 접근할 수 있으면 좋겠다.
-			//let rdr = reader_.rdr;
-			let read_byte = next_pos.byte();
-			let cur_percent:u32 = u32::try_from(read_byte * 100 / total_file_byte ).unwrap();
+			
+			// next_pos.byte() 는 100% 가 넘는 문제가 생김
+			let nread = reader_.rdr.nread;
+			// let read_byte = next_pos.byte();
+			let cur_percent:u32 = u32::try_from(nread as u64 * 100 / total_file_byte ).unwrap();
 			if cur_percent != old_percent {
-				if cur_percent <= 100{
+				if cur_percent < 100{
+					cb(cur_percent);
+				}
+				else if cur_percent == 100{
 					cb(cur_percent);
 				}
 				

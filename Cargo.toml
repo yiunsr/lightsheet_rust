@@ -7,17 +7,28 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+web-view = { version = "0.6.3", features = ["edge"] }
+#![windows_subsystem = "windows"]
 log = "0.4"
 csv = "1.1.5"
 chardetng = "0.1.10"
 encoding_rs = "0.8.26"
-encoding_rs_io = "0.1.7"
-# web-view = { version = "0.7", features = ["edge"] }
-#![windows_subsystem = "windows"]
+encoding_rs_io = { git = "https://github.com/yiunsr/encoding_rs_io.git" }
+actix-web = "3.3.2"
+actix-rt = "1.1.1"
+rust-embed = "5.1.0"
+mime_guess = "2.0.1"
+futures = "0.1"
 
 [dependencies.rusqlite]
 version = "0.24.2"
 features = ["bundled"]
 
+[profile.dev]
+opt-level = 0
+
 [profile.release]
 opt-level = 3
+debug = false
+rpath = false
+debug-assertions = false
