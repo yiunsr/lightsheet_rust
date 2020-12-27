@@ -15,7 +15,7 @@ use std::{borrow::Cow, sync::mpsc, thread};
 use web_view::*;
 
 #[derive(RustEmbed)]
-#[folder = "public/"]
+#[folder = "frontend/public/"]
 struct Asset;
 
 // fn callback(percent:u32){
@@ -94,7 +94,7 @@ fn main() {
     // to actix web server
     web_view::builder()
         .title("Actix webview example")
-        .content(Content::Url(format!("http://127.0.0.1:{}/html/index.html", port)))
+        .content(Content::Url(format!("http://127.0.0.1:{}/index.html", port)))
         .size(400, 400)
         .resizable(true)
         .debug(true)

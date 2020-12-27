@@ -11,6 +11,14 @@ cargo build --release
 chcp 65001
 ```
 
+
+== frontend ==
+
+```
+cd frontend
+yarn serve
+```
+
 == csv 파일 경로 ==
 * 1994.csv
   * Data Expo 2009: Airline on time data
