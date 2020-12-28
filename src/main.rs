@@ -3,9 +3,6 @@ use std::time::Instant;
 use datatable::csv_reader;
 use web_view::*;
 
-mod datatable;
-
-
 use actix_rt;
 use actix_web::{body::Body, web, App, HttpRequest, HttpResponse, HttpServer};
 use futures::future::Future;
@@ -14,9 +11,17 @@ use rust_embed::RustEmbed;
 use std::{borrow::Cow, sync::mpsc, thread};
 use web_view::*;
 
+mod datatable;
+#[cfg(debug_assertions)]
 #[derive(RustEmbed)]
 #[folder = "frontend/public/"]
 struct Asset;
+
+#[cfg(not(debug_assertions))]
+#[derive(RustEmbed)]
+#[folder = "frontend/dist/"]
+struct Asset;
+
 
 // fn callback(percent:u32){
 //     println!("percent : {}%", percent);
@@ -39,6 +44,31 @@ struct Asset;
 //     println!("1s per insert : {}", (table_info.row_len as f64) / spendtime);
 
 // }
+
+
+
+#[cfg(debug_assertions)]
+fn get_port() -> Option<u16> {
+    Some(8080u16)
+}
+
+
+#[cfg(target_os = "macos")]
+fn hide_console_window() {
+}
+#[cfg(target_os = "windows")]
+fn hide_console_window() {
+    unsafe { winapi::um::wincon::FreeConsole() };
+}
+#[cfg(target_os = "linux")]
+fn hide_console_window() {
+}
+
+#[cfg(not(debug_assertions))]
+fn get_port() -> Option<u16> {
+    None
+}
+
 
 
 fn assets(req: HttpRequest) -> HttpResponse {
@@ -65,7 +95,10 @@ fn assets(req: HttpRequest) -> HttpResponse {
     }
 }
 
+
+
 fn main() {
+    hide_console_window();
     let (server_tx, server_rx) = mpsc::channel();
     let (port_tx, port_rx) = mpsc::channel();
 
@@ -85,8 +118,8 @@ fn main() {
         let _ = sys.run();
     });
 
-
-    let port = port_rx.recv().unwrap();
+    let port_opt = get_port();
+    let port = port_opt.unwrap_or(port_rx.recv().unwrap());
     let server = server_rx.recv().unwrap();
 
     // start web view in current thread
@@ -95,7 +128,7 @@ fn main() {
     web_view::builder()
         .title("Actix webview example")
         .content(Content::Url(format!("http://127.0.0.1:{}/index.html", port)))
-        .size(400, 400)
+        .size(800, 600)
         .resizable(true)
         .debug(true)
         .user_data(())

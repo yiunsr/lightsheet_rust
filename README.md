@@ -1,6 +1,10 @@
 
 == release 빌드 ==
 ```
+# frontend 환경에 대해 html, css, js 부터 생성한다. 
+cd frontend
+yarn build
+cd ..
 cargo build --release
 ```
 
@@ -15,6 +19,7 @@ chcp 65001
 == frontend ==
 
 ```
+# debug mode 일 때는 꼭 yarn serve 를해야한다. 
 cd frontend
 yarn serve
 ```

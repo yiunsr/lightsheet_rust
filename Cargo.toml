@@ -3,8 +3,13 @@ name = "lightsheet_rust"
 version = "0.1.0"
 authors = ["yiunsr <yiunsr@hanmail.net>"]
 edition = "2018"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"
+winapi = { version = "0.3", features = [ "winuser" ] }
 
 [dependencies]
 web-view = { version = "0.6.3", features = ["edge"] }
@@ -19,6 +24,8 @@ actix-rt = "1.1.1"
 rust-embed = "5.1.0"
 mime_guess = "2.0.1"
 futures = "0.1"
+winapi = { version = "0.3", features = [ "winuser" ] }
+
 
 [dependencies.rusqlite]
 version = "0.24.2"
