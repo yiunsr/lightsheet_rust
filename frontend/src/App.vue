@@ -2,31 +2,14 @@
   <v-app>
     <v-app-bar
       app
-      color="primary"
-      dark
+      height="36px"
+      dense
+
     >
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
+      <v-toolbar-title>LS</v-toolbar-title>
 
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
-
+      <AppMenu height="36px" />
       <v-spacer></v-spacer>
-
       <v-btn
         href="#" onclick="location.reload();"
         target="_blank"
@@ -35,6 +18,42 @@
         <span class="mr-2">reload</span>
         <v-icon>mdi-refresh</v-icon>
       </v-btn>
+
+      <v-menu offset-y>
+        <template v-slot:activator="{ on }">
+          <v-btn  dense height="24px" width="24px"  v-on="on" color="info" x-small fab @click="changeLang">
+            <v-icon color="yellow">fa-language</v-icon>
+          </v-btn>
+        </template>
+      <v-list>
+        <v-list-item>
+          <v-list-item-title>English</v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-title>한국어</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+
+      <div>
+        <v-tooltip v-if="!$vuetify.theme.dark" bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn dense height="24px" width="24px" v-on="on" color="info" x-small fab @click="darkMode">
+              <v-icon class="mr-1">mdi-moon-waxing-crescent</v-icon>
+            </v-btn>
+          </template>
+          <span>Dark Mode On</span>
+        </v-tooltip>
+
+        <v-tooltip v-else bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn  dense height="24px" width="24px"  v-on="on" color="info" x-small fab @click="darkMode">
+              <v-icon color="yellow">mdi-white-balance-sunny</v-icon>
+            </v-btn>
+          </template>
+          <span>Dark Mode Off</span>
+        </v-tooltip>
+      </div>
     </v-app-bar>
 
     <v-main>
@@ -45,16 +64,25 @@
 
 <script>
 import HelloWorld from './components/HelloWorld';
+import AppMenu from './components/AppMenu';
 
 export default {
   name: 'App',
 
   components: {
-    HelloWorld,
+    HelloWorld, AppMenu
   },
 
   data: () => ({
     //
   }),
+  methods: {
+    darkMode: function(){
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+    },
+    changeLang: function(){
+
+    },
+  },
 };
 </script>

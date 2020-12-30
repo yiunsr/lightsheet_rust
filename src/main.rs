@@ -96,7 +96,6 @@ fn assets(req: HttpRequest) -> HttpResponse {
 }
 
 
-
 fn main() {
     hide_console_window();
     let (server_tx, server_rx) = mpsc::channel();
@@ -104,7 +103,7 @@ fn main() {
 
     // start actix web server in separate thread
     thread::spawn(move || {
-        let sys = actix_rt::System::new("actix-example");
+        let sys = actix_rt::System::new("Light Sheet");
         let server = HttpServer::new(
             || App::new().route("*", web::get().to(assets)))
             .bind("127.0.0.1:0")
@@ -129,6 +128,7 @@ fn main() {
         .title("Actix webview example")
         .content(Content::Url(format!("http://127.0.0.1:{}/index.html", port)))
         .size(800, 600)
+        // .min_size(600i32, 480i32)
         .resizable(true)
         .debug(true)
         .user_data(())
