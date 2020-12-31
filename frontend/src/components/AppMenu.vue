@@ -24,7 +24,7 @@
         --bar-letter-spacing: 0.2px;
         --bar-padding: 3px;
         --bar-button-icon-size: 20px;
-        --bar-button-padding: 4px 6px;
+        --bar-button-padding: 4px 4px;
         --bar-button-radius: 4px;
         --bar-button-hover-bkg: rgb(241, 243, 244);
         --bar-button-active-color: rgb(26, 115, 232);
