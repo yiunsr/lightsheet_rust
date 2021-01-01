@@ -4,9 +4,10 @@
       app
       height="36px"
       dense
-
+      class="pa-0"
     >
-      <v-toolbar-title style="width:36px">LS</v-toolbar-title>
+      <v-toolbar-title style="width:36px;text-align:center" 
+        class="font-weight-black rounded secondary ">LS</v-toolbar-title>
 
       <AppMenu height="36px" />
       <v-spacer></v-spacer>
@@ -21,15 +22,15 @@
 
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
-          <v-btn  dense height="24px" width="24px"  v-on="on" color="info" x-small fab @click="changeLang">
+          <v-btn  dense height="24px" width="24px"  v-on="on" color="info" x-small fab>
             <v-icon >fa-language</v-icon>
           </v-btn>
         </template>
       <v-list>
-        <v-list-item>
+        <v-list-item @click="changeLang('en')">
           <v-list-item-title>English</v-list-item-title>
         </v-list-item>
-        <v-list-item>
+        <v-list-item @click="changeLang('ko')">
           <v-list-item-title>한국어</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -57,13 +58,13 @@
     </v-app-bar>
 
     <v-main>
-      <HelloWorld/>
+      <StartPage/>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld';
+import StartPage from './components/StartPage';
 import AppMenu from './components/AppMenu';
 
 
@@ -71,7 +72,7 @@ export default {
   name: 'App',
 
   components: {
-    HelloWorld, AppMenu
+    StartPage, AppMenu
   },
 
   data: () => ({
@@ -87,8 +88,9 @@ export default {
     darkMode: function(){
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
     },
-    changeLang: function(){
-
+    changeLang: function(lang){
+      // debugger;  // eslint-disable-line no-debugger
+      this.$i18n.locale = lang;
     },
   },
 };

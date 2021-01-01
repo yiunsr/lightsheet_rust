@@ -1,6 +1,5 @@
 use std::process;
 use std::time::Instant;
-use datatable::csv_reader;
 use web_view::*;
 
 use actix_rt;
@@ -9,8 +8,10 @@ use futures::future::Future;
 use mime_guess::from_path;
 use rust_embed::RustEmbed;
 use std::{borrow::Cow, sync::mpsc, thread};
-use web_view::*;
 
+use datatable::csv_reader;
+
+mod bridge;
 mod datatable;
 #[cfg(debug_assertions)]
 #[derive(RustEmbed)]
@@ -131,8 +132,8 @@ fn main() {
         // .min_size(600i32, 480i32)
         .resizable(true)
         .debug(true)
-        .user_data(())
-        .invoke_handler(|_webview, _arg| Ok(()))
+        .user_data(0)
+        .invoke_handler(bridge::invoke_handler)
         .run()
         .unwrap();
 
@@ -140,3 +141,4 @@ fn main() {
     // let _ = server.stop(true).wait();
     let _ = server.stop(true); //.shutdown_timeout();
 }
+

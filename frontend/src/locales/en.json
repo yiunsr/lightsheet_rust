@@ -1,0 +1,19 @@
+{
+  "message": "hello i18n !!",
+  "menu": {
+    "file": "File",
+    "edit": "Edit",
+    "help": "Help",
+
+    "#File": "",
+    "new": "New",
+    "open": "Open",
+    "save": "Save",
+    "close": "Close",
+
+    "#Edit": "",
+    "cut": "Cut",
+    "copy": "Copy",
+    "paste": "Paste"
+  }
+}
