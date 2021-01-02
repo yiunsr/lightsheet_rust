@@ -17,3 +17,6 @@ if(typeof window == "object"){
 }
 
 common.initApp();
+window.apiCallback = function(success, cb, result){
+  common.apiCallback(success, cb, result);
+}

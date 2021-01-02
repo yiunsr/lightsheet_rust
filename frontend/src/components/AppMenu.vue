@@ -137,19 +137,25 @@ export default {
           {
             text: this.$t("menu.file"),
             menu: [
-              { text: this.$t("menu.new"), click: () => { this.$refs.text.innerHTML = this.initial_html; this.focus_text(); } },
-              { text: this.$t("menu.open") + "...", click: () => { common.callAPI("open", ""); } },
-              { text: this.$t("menu.save") + "...", click: () => alert("You're amazing, "+(prompt("What's your name?")||"friend")+"!") },
+              { 
+                text: this.$t("menu.file_open") + "...", 
+                hotkey: this.isMacLike ? "command+o" : "ctrl+o",
+                click: () => { common.callAPI("open"); } },
+              { 
+                text: this.$t("menu.file_save") + "...", 
+                click: () => alert("You're amazing, "+(prompt("What's your name?")||"friend")+"!") ,
+                disabled: true,
+              },
               { is: "separator" },
-              { text: this.$t("menu.close"), click () { common.callAPI("exit", "") } },
+              { text: this.$t("menu.file_exit"), click () { common.callAPI("exit") } },
             ]
           },
           {
             text: this.$t("menu.edit"),
             menu: [
-              { text: this.$t("menu.cut"), click: () => document.execCommand("cut") },
-              { text: this.$t("menu.copy"), click: () => document.execCommand("copy") },
-              { text: this.$t("menu.paste"), click () { navigator.clipboard.readText().then(text => { document.execCommand("insertText", false, text) }) } }
+              { text: this.$t("menu.edit_cut"), click: () => document.execCommand("cut") },
+              { text: this.$t("menu.edit_copy"), click: () => document.execCommand("copy") },
+              { text: this.$t("menu.edit_paste"), click () { navigator.clipboard.readText().then(text => { document.execCommand("insertText", false, text) }) } }
             ]
           },
           {
@@ -221,23 +227,25 @@ export default {
             menu_width: 220
           },
           {
-            text: "Help",
+            text: this.$t("menu.help"),
             menu: [
-              { text: "About", icon: "help", 
+              { text: this.$t("menu.help_about"), icon: "help", 
                 click: () => common.callAPI(
                   "alert", 
-                  "lightsheet_rust\nhttps://github.com/yiunsr/lightsheet_rust\nby Yiun Seungryong") 
+                  {msg: "lightsheet_rust\nhttps://github.com/yiunsr/lightsheet_rust\nby Yiun Seungryong"}) 
               },
               { is: "separator" },
               { text: "Repository", icon: "exit_to_app",
-               click: () => common.callAPI("openurl","https://github.com/yiunsr/lightsheet_rust") },
+               click: () => common.callAPI("openurl",{url: "https://github.com/yiunsr/lightsheet_rust"}) },
             ],
             menu_width: 220
           },
           {
             text: "Debug",
             menu: [
-              { text: "alert test", click:() =>  common.callAPI("alert", "text") }
+              { text: "alert test", click:() =>  common.callAPI("alert", {msg: "text"}) },
+              { text: "title test", click:() =>  common.callAPI("settitle", {title: "LightSheet Test"}) },
+              { text: "prompt test", click:() =>  common.callAPI("prompt", {msg: "User Input Test"}) }
             ]
           },
           { is: "spacer" },

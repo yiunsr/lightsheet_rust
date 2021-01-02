@@ -126,7 +126,7 @@ fn main() {
     // and point it to a port that was bound
     // to actix web server
     web_view::builder()
-        .title("Actix webview example")
+        .title("Lightsheet")
         .content(Content::Url(format!("http://127.0.0.1:{}/index.html", port)))
         .size(800, 600)
         // .min_size(600i32, 480i32)

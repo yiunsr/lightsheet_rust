@@ -2,18 +2,17 @@
   "message": "hello i18n !!",
   "menu": {
     "file": "File",
+    "file_new": "New",
+    "file_open": "Open",
+    "file_save": "Save",
+    "file_exit": "Exit",
+
     "edit": "Edit",
+    "edit_cut": "Cut",
+    "edit_copy": "Copy",
+    "edit_paste": "Paste",
+
     "help": "Help",
-
-    "#File": "",
-    "new": "New",
-    "open": "Open",
-    "save": "Save",
-    "close": "Close",
-
-    "#Edit": "",
-    "cut": "Cut",
-    "copy": "Copy",
-    "paste": "Paste"
+    "help_about": "About"
   }
 }
