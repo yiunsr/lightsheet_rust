@@ -1,3 +1,16 @@
+import JSONP from "browser-jsonp"
+
+function simulatedApi(reqParamStr){
+  var url = "http://localhost:9010/simulated_api";
+
+  JSONP({
+    url:url, 
+    data: {param:reqParamStr},
+    success: function(data) {
+      console.log(data); 
+    }
+  });
+}
 
 
 function invokeInternal(reqParamStr){
@@ -6,13 +19,15 @@ function invokeInternal(reqParamStr){
   var param = reqParam["param"];
   var cb = reqParam["cb"];
 
-  var ret = doAction(api, param);
+  var ret = doAction(api, param, reqParamStr);
+  if(ret === null) return;
   var success = ret[0];
   var result = ret[1];
   window.apiCallback (success, cb, result);
 }
 
-function doAction(api, param){
+function doAction(api, param, reqParamStr){
+  var filepath;
   switch(api){
     case "alert":
       alert(param["msg"]);
@@ -21,9 +36,16 @@ function doAction(api, param){
       var user_input = prompt(param["msg"]);
       return [true, {user_input: user_input}];
     case "open":
-      var filepath = window.prompt(
+      filepath = window.prompt(
         "simulated file\nInput File path",
         "D:\\res\\csv_sample\\세종1.txt");
+      return [true, {filepath: filepath}];
+    case "simulated_api_echo":
+      simulatedApi(reqParamStr);
+      return null;
+    case "openfile":
+      filepath = param["filepath"];
+      simulatedApi(param);
       return [true, {filepath: filepath}];
     case "openurl":
       var url = param["url"];

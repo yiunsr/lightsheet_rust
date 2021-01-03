@@ -5,18 +5,19 @@ use webbrowser;
 
 use web_view::{{ WebView, WVResult }};
 
-pub fn result2js( wv: &mut WebView<usize>, success:bool, cb:String, result:String){
+pub fn result2js(success:bool, cb:String, result:String) ->String{
+    let mut js_result:String;
     if cb == "" {
         let js = &format!(
             "apiCallback({}, \"\", {});", success,  result);
-        wv.eval(js);
+        js_result = js.to_string();
     }
     else{
         let js = &format!(
             "apiCallback({}, {}, {});", success, cb, result);
-        wv.eval(js);
+        js_result = js.to_string();
     }
-    
+    js_result
 }
 
 pub fn singleJson(key: String, value: Value) -> String{
@@ -35,14 +36,32 @@ pub fn unwrap_value_or(value:Option<&Value>, default_: String) -> String {
 pub fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
     let parsed_json:Value = serde_json::from_str(arg).unwrap();
     let parsed_json: Map<String, Value> = parsed_json.as_object().unwrap().clone();
-    let api = parsed_json["api"].as_str().unwrap().clone();
-    let cb= parsed_json["cb"].as_str().unwrap().to_string().clone();
+    let api = parsed_json["api"].as_str().unwrap().to_string();
+    let cb= parsed_json["cb"].as_str().unwrap().to_string();
     let param = parsed_json["param"].as_object().unwrap();
 
+    if api =="settitle"{
+        let title = param["title"].as_str().unwrap();
+        wv.set_title(title);
+        return Ok(());
+    }
+    else if api =="exit"{
+        wv.exit();
+        return Ok(());
+    }
+    let js = invoke_handler_internal(&api, cb, param);
+    wv.eval(&js);
+    Ok(())
+}
+
+pub fn invoke_handler_internal(api:&str, cb: String, param: &Map<String, Value>)-> String {
+
+    let mut js_result:String = "".to_string();
     match api {
         "alert" => {
             let msg: &str = param["msg"].as_str().unwrap();
             tfd::message_box_ok("Info", msg, MessageBoxIcon::Info);
+            js_result = result2js(true, cb, "{}".to_string());
         },
         "prompt" => {
             let msg = param["msg"].as_str().unwrap();
@@ -53,7 +72,7 @@ pub fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
                 None => Value::Null
             };
             let result = singleJson("user_input".to_string() , user_input);
-            result2js(wv, true, cb, result);
+            js_result = result2js(true, cb, result);
         },
         "open" => {
             let filepath = match tfd::open_file_dialog("Please choose a file...", "", None){
@@ -61,26 +80,25 @@ pub fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
                 None => Value::Null
             };
             let result = singleJson("filepath".to_string() , filepath);
-            result2js(wv, true, cb, result);
+            js_result = result2js(true, cb, result);
         },
         "openurl" =>{
             let url = param["url"].as_str().unwrap();
             webbrowser::open(url);
+            js_result = result2js(true, cb, "{}".to_string());
         },
-        "settitle" => {
-            let title = param["title"].as_str().unwrap();
-            wv.set_title(title);
-        }
-        "save" => match tfd::save_file_dialog("Save file...", "") {
-            Some(path) => tfd::message_box_ok("File chosen", &path, MessageBoxIcon::Info),
-            None => tfd::message_box_ok(
+        
+        "save" => {
+            match tfd::save_file_dialog("Save file...", "") {
+                Some(path) => tfd::message_box_ok("File chosen", &path, MessageBoxIcon::Info),
+                None => tfd::message_box_ok(
                 "Warning",
                 "You didn't choose a file.",
                 MessageBoxIcon::Warning,
-            ),
+            )};
+            js_result = result2js(true, cb, "{}".to_string());
         },
-        "exit" => wv.exit(),
         _ => unimplemented!(),
     };
-    Ok(())
+    js_result
 }

@@ -245,7 +245,9 @@ export default {
             menu: [
               { text: "alert test", click:() =>  common.callAPI("alert", {msg: "text"}) },
               { text: "title test", click:() =>  common.callAPI("settitle", {title: "LightSheet Test"}) },
-              { text: "prompt test", click:() =>  common.callAPI("prompt", {msg: "User Input Test"}) }
+              { text: "prompt test", click:() =>  common.callAPI("prompt", {msg: "User Input Test"}) },
+              { text: "simulated_api_echo", click:() =>  
+                common.callAPI("simulated_api_echo", {msg: "simulated_api_echo Test"}) }
             ]
           },
           { is: "spacer" },

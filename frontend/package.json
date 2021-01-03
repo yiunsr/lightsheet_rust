@@ -9,6 +9,8 @@
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'"
   },
   "dependencies": {
+    "axios": "^0.21.1",
+    "browser-jsonp": "https://github.com/larryosborn/JSONP.git",
     "core-js": "^3.6.5",
     "slickgrid": "https://github.com/6pac/SlickGrid.git",
     "vue": "^2.6.11",
