@@ -18,7 +18,7 @@ use rusqlite::NO_PARAMS;
 
 use super::db_utils;
 
-pub type Callback = fn(u32);
+// pub type Callback = fn(u32);
 pub struct TableInfo {
     pub conn: Connection,
 	pub table_name: String,
@@ -62,7 +62,8 @@ pub fn csv_open(file: &mut File) ->
 
 	let transcoded = DecodeReaderBytesBuilder::new()
         .encoding(Some(enc))
-	    .build_with_buffer(file, vec![0; 1024 * (1 << 10)]).unwrap();
+		//.build_with_buffer(file, vec![0; 1024 * (1 << 10)]).unwrap();
+		.build_with_buffer(file, vec![0; 1024 * 4]).unwrap();
     
     let rdr = csv::ReaderBuilder::new()
         .delimiter(sep)
@@ -92,7 +93,9 @@ pub fn get_col_count(readedstr:&str, sep:u8) -> u32 {
 
 // fn read_csv(dbfile: String, csvfile: String, cb:Callback
 // 		) -> Result<Vec<Option<StringRecord>>, Box<dyn Error>> {
-pub fn read_csv(dbfile: String, csvfile: String, cb:Callback) ->Result<(TableInfo), Box<dyn Error>>{
+pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), Box<dyn Error>>
+	where F: Fn(u32) -> ()
+{
 
     // Read CSV File
     

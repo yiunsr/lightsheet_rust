@@ -1,5 +1,5 @@
 <template>
-  <v-app :style="{background: $vuetify.theme.themes[themeMode].background}">
+  <v-app ref="app" :style="{background: $vuetify.theme.themes[themeMode].background}">
     <v-app-bar
       app
       height="36px"
@@ -60,6 +60,33 @@
     <v-main>
       <StartPage/>
     </v-main>
+
+    <v-dialog
+      v-model="progress_dialog" max-width="600" persistent
+      content-class="v-app-bar"
+    >
+      <v-card>
+        <v-card-title class="headline">
+          {{ progress_dialog_title }}
+        </v-card-title>
+
+        <v-card-text>
+          <v-progress-linear
+            color="primary"
+            :buffer-value="progress_percent" stream height = "20"
+          >
+            <template v-slot:default>
+              <strong>{{ progress_percent }}%</strong>
+            </template>
+          </v-progress-linear>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-app>
 </template>
 
@@ -76,6 +103,7 @@ export default {
   },
 
   data: () => ({
+    progress_dialog: false, progress_percent: 0, progress_dialog_title: "",
     //
   }),
   computed:{
@@ -91,6 +119,19 @@ export default {
     changeLang: function(lang){
       // debugger;  // eslint-disable-line no-debugger
       this.$i18n.locale = lang;
+    },
+    show_progress_dialog(title){
+      this.progress_dialog = true;
+      this.progress_percent = 0;
+      this.progress_dialog_title = title;
+    },
+    hide_progress_dialog(){
+      this.progress_dialog = false;
+      this.progress_percent = 0;
+      this.progress_dialog_title = "";
+    },
+    progress_dialog_percent(percent){
+      this.progress_percent = percent;
     },
   },
 };

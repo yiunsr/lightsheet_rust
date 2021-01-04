@@ -26,16 +26,35 @@ export default {
     return _callAPI(api, param, cb);
   },
   apiCallback(success, cb, result){
-    console.log("[apiCallback] success : " + success + " cb : " + cb);
-    if(cb != "")
+    if(cb == ""){
+      console.log("[apiCallback] success : " + success);
+    }
+    else if(cb.includes(".")){
+      var _1st = cb.split(".")[0];
+      var _2nd = cb.split(".")[1];
+      window[_1st][_2nd](success, result);
+      console.log("[apiCallback] success : " + success + " cb : " + cb);
+    }
+    else{
+      console.log("[apiCallback] success : " + success + " cb : " + cb);
       window[cb](success, result);
+    }
   },
   initApp(){
+    console.log("initApp");
     if  (typeof(external) == "object" && typeof(external.invoke) != "undefined")
       _isWebview = true;
   },
   exit(){
     return _callAPI("exit") ;
   },
-
+  show_progress_dialog(title){
+    window.vm_app.show_progress_dialog(title);
+  },
+  hide_progress_dialog(){
+    window.vm_app.hide_progress_dialog();
+  },
+  progress_dialog_percent(percent){
+    window.vm_app.progress_dialog_percent(percent);
+  },
 }

@@ -2,6 +2,7 @@ use std::process;
 use std::time::Instant;
 use web_view::*;
 use webbrowser;
+use serde_json::{Value, Map};
 
 use actix_rt;
 use actix_web::{
@@ -20,12 +21,6 @@ use datatable::csv_reader;
 
 mod bridge;
 mod datatable;
-
-static mut API_REQ_TX: Option<Mutex<Sender<String>>> = None;
-static mut API_REQ_RX: Option<Receiver<String>> = None;
-
-static mut API_RES_TX: Option<Mutex<Sender<String>>> = None;
-static mut API_RES_RX: Option<Receiver<String>> = None;
 
 #[cfg(debug_assertions)]
 #[derive(RustEmbed)]
@@ -122,42 +117,25 @@ async fn simulated_api(req: HttpRequest) -> String {
     let query_str = req.query_string();
     let qs = QString::from(query_str);
     let callback = qs.get("callback").unwrap();
-    let param = qs.get("param").unwrap();
-    let mut api_req_tx:Sender<String>;
-    let mut api_res_rx:&Receiver<String>;
-    unsafe {
-        api_req_tx = API_REQ_TX.as_ref().unwrap().lock().unwrap().clone();
-        api_res_rx = API_RES_RX.as_ref().unwrap().clone();
-    }
-    api_req_tx.send(param.to_string());
-    println!("Wait");
-    api_res_rx.recv().unwrap();
+    let agr_param = qs.get("param").unwrap();
 
-    let api_result = "{\"data\": \"Echo Test\"}";
-    let ret = format!("{}({})", callback, api_result);
-    ret
+    let parsed_json:Value = serde_json::from_str(agr_param).unwrap();
+    let parsed_json: Map<String, Value> = parsed_json.as_object().unwrap().clone();
+    let api = parsed_json["api"].as_str().unwrap().to_string();
+    let cb= parsed_json["cb"].as_str().unwrap().to_string();
+
+    // let param = parsed_json["param"].as_object().unwrap();
+    // let wv_opt = None;
+    // let api_result = bridge::invoke_handler_internal(wv_opt, &api, cb, param);
+    // let ret = format!("{}({})", callback, api_result);
+    // ret
+    "Test".to_string()
 }
 
 fn main() {
     hide_console_window();
     let (server_tx, server_rx) = mpsc::channel();
     let (port_tx, port_rx) = mpsc::channel();
-    // let (api_tx, api_rx):(Receiver<String>, Sender<String>) = mpsc::channel();
-
-    // https://users.rust-lang.org/t/global-sync-mpsc-channel-is-possible/14476
-    unsafe {
-        let (api_req_tx, api_req_rx) = mpsc::channel();
-        API_REQ_TX = Some(Mutex::new(api_req_tx));
-        let api_req_tx = API_REQ_TX.as_ref().unwrap().lock().unwrap().clone();
-        API_REQ_RX = Some(api_req_rx);
-        let api_req_rx = API_REQ_RX.as_ref().unwrap().clone();
-
-        let (api_res_tx, api_res_rx) = mpsc::channel();
-        API_RES_TX = Some(Mutex::new(api_res_tx));
-        let api_req_tx = API_RES_TX.as_ref().unwrap().lock().unwrap().clone();
-        API_RES_RX = Some(api_res_rx);
-        let api_res_rx = API_RES_RX.as_ref().unwrap().clone();
-    }
 
     // start actix web server in separate thread
     thread::spawn(move || {

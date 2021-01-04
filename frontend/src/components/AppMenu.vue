@@ -108,6 +108,7 @@
 import Vue from 'vue'
 import VueFileToolbarMenu from 'vue-file-toolbar-menu';
 import common from '../common.js'
+import ui from '../ui.js'
 // for dynamic css variables
 Vue.component("v-style", {
   render (createElement) { return createElement("style", this.$slots.default); }
@@ -140,7 +141,10 @@ export default {
               { 
                 text: this.$t("menu.file_open") + "...", 
                 hotkey: this.isMacLike ? "command+o" : "ctrl+o",
-                click: () => { common.callAPI("open"); } },
+                click: () => { 
+                  ui.fileOpen();
+                } 
+              },
               { 
                 text: this.$t("menu.file_save") + "...", 
                 click: () => alert("You're amazing, "+(prompt("What's your name?")||"friend")+"!") ,
