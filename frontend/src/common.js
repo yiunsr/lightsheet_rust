@@ -49,12 +49,15 @@ export default {
     return _callAPI("exit") ;
   },
   show_progress_dialog(title){
+    console.log("show_progress_dialog");
     window.vm_app.show_progress_dialog(title);
   },
   hide_progress_dialog(){
+    console.log("hide_progress_dialog");
     window.vm_app.hide_progress_dialog();
   },
   progress_dialog_percent(percent){
+    console.log("progress_dialog_percent : " + percent + "%");
     window.vm_app.progress_dialog_percent(percent);
   },
 }

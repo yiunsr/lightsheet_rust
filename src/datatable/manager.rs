@@ -15,7 +15,7 @@ pub fn open_file<F>(filepath:String, cb:F)
     }
     let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tmp.db".to_string();
     let now = Instant::now();
-    let table_info = match csv_reader::read_csv(db_path, filepath, callback){
+    let table_info = match csv_reader::read_csv(db_path, filepath, cb){
         Ok(ti) => ti,
         Err(error) => {
             println!("error running example: {}", error);    

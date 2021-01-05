@@ -1,4 +1,6 @@
-use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::cell::{RefCell, RefMut};
 use tinyfiledialogs as tfd;
 use tinyfiledialogs::MessageBoxIcon;
 use serde_json::{Map, Value, to_string};
@@ -51,17 +53,17 @@ pub fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
         return Ok(());
     }
     let js;
-    {
-        let rc_wv = RefCell::new(&mut(*wv));
-        let opt_rc_wv = Some(rc_wv);
-        js = invoke_handler_internal(&opt_rc_wv, &api, cb, param);
-    }
-    wv.eval(&js);
+    let rfc_wv = RefCell::new(wv);
+    let arc_rfc_wv = Arc::new(rfc_wv);
+    let opt_arc_rfc_wv = Some(arc_rfc_wv.clone());
+    js = invoke_handler_internal(opt_arc_rfc_wv, &api, cb, param);
+    let wv_ = arc_rfc_wv.clone();
+    wv_.borrow_mut().eval(&js);
     Ok(())
 }
 
-pub fn invoke_handler_internal(opt_rc_wv: &Option<RefCell<&mut WebView<usize>>>, api:&str, cb: String, param: &Map<String, Value>)-> String {
-
+pub fn invoke_handler_internal(opt_arc_rfc_wv: Option<Arc<RefCell<&mut WebView<usize>>>>, 
+        api:&str, cb: String, param: &Map<String, Value>)-> String {
     let mut js_result:String = "".to_string();
     match api {
         "simulated_api_echo"=>{
@@ -95,19 +97,25 @@ pub fn invoke_handler_internal(opt_rc_wv: &Option<RefCell<&mut WebView<usize>>>,
         },
         "openfile" => {
             let filepath = param["filepath"].as_str().unwrap();
-            match opt_rc_wv {
-                Some(rc_wv_) =>{
-                    let mut ref0 = rc_wv_.borrow_mut();
-                    let js0 = format!("common.show_progress_dialog('Loading ...')");
-                    ref0.eval(&js0);
+            match opt_arc_rfc_wv {
+                Some(arc_rfc_wv) =>{
+                    {
+                        let mut aref0 = arc_rfc_wv.borrow_mut();
+                        let js0 = format!("common.show_progress_dialog('Loading ...')");
+                        aref0.eval(&js0);
+                    }
                     manager::open_file(filepath.to_string(), |percent:u32| -> () {
                         println!("{}", percent);
-                        let mut ref1 = rc_wv_.borrow_mut();
                         let js1 = format!("common.progress_dialog_percent({})", percent);
-                        ref1.eval(&js1);
+                        let mut arc_rfc_wv3 = arc_rfc_wv.clone();
+                        let mut aref1 = arc_rfc_wv3.borrow_mut();
+                        aref1.eval(&js1);
                     });
-                    let js2 = format!("common.hide_progress_dialog()");
-                    ref0.eval(&js2);
+                    {
+                        let mut aref0 = arc_rfc_wv.borrow_mut();
+                        let js0 = format!("common.hide_progress_dialog()");
+                        aref0.eval(&js0);
+                    }
                 },
                 Null => {   
                     manager::open_file(filepath.to_string(), |percent:u32| -> () {

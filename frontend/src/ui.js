@@ -7,6 +7,7 @@ export default {
   retFileOpen(success, data){
     if(success === false) return;
     var filepath = data["filepath"];
+    if(filepath === null || filepath =="") return;
     common.callAPI("openfile", {filepath:filepath});
     let percent = 0;
     common.show_progress_dialog();

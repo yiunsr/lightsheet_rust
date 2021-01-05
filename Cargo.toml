@@ -25,7 +25,7 @@ rust-embed = "5.1.0"
 mime_guess = "2.0.1"
 qstring = "0.7.2"
 
-futures = "0.1"
+futures = "0.3"
 winapi = { version = "0.3", features = [ "winuser" ] }
 tinyfiledialogs = "3.3"
 serde_json = "1.0"
