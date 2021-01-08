@@ -1,4 +1,6 @@
+use std::time::Duration;
 use std::rc::Rc;
+use std::thread;
 use std::sync::Arc;
 use std::cell::{RefCell, RefMut};
 use tinyfiledialogs as tfd;
@@ -52,17 +54,14 @@ pub fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
         wv.exit();
         return Ok(());
     }
-    let js;
-    let rfc_wv = RefCell::new(wv);
-    let arc_rfc_wv = Arc::new(rfc_wv);
-    let opt_arc_rfc_wv = Some(arc_rfc_wv.clone());
-    js = invoke_handler_internal(opt_arc_rfc_wv, &api, cb, param);
-    let wv_ = arc_rfc_wv.clone();
-    wv_.borrow_mut().eval(&js);
+
+    let opt_wv = Some(wv);
+    invoke_handler_internal(opt_wv, &api, cb, param);
+    
     Ok(())
 }
 
-pub fn invoke_handler_internal(opt_arc_rfc_wv: Option<Arc<RefCell<&mut WebView<usize>>>>, 
+pub fn invoke_handler_internal(opt_wv: Option<&mut WebView<usize>>, 
         api:&str, cb: String, param: &Map<String, Value>)-> String {
     let mut js_result:String = "".to_string();
     match api {
@@ -97,8 +96,10 @@ pub fn invoke_handler_internal(opt_arc_rfc_wv: Option<Arc<RefCell<&mut WebView<u
         },
         "openfile" => {
             let filepath = param["filepath"].as_str().unwrap();
-            match opt_arc_rfc_wv {
-                Some(arc_rfc_wv) =>{
+            match opt_wv {
+                Some(wv) =>{
+                    let rfc_wv = RefCell::new(wv);
+                    let arc_rfc_wv = Arc::new(rfc_wv);
                     {
                         let mut aref0 = arc_rfc_wv.borrow_mut();
                         let js0 = format!("common.show_progress_dialog('Loading ...')");

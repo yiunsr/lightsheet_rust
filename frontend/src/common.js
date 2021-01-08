@@ -1,6 +1,8 @@
 import webApi from "./webApi"
 
+var WS_URI = 'ws://localhost:9010/ws/';
 var _isWebview = false;
+var _webSocket = null;
 
 async function _callAPI(api, param, cb){  // eslint-disable-line no-unused-vars
   if(param == undefined){
@@ -19,6 +21,34 @@ async function _callAPI(api, param, cb){  // eslint-disable-line no-unused-vars
   else{
     webApi.invoke(reqParamStr)
   }
+}
+
+function init_ws(){
+  function connect() {
+    disconnect();
+    _webSocket = new WebSocket(WS_URI);
+    console.log('Connecting...');
+    _webSocket.onopen = function() {
+      console.log('Connected.');
+    };
+    _webSocket.onmessage = function(e) {
+      console.log('Received: ' + e.data);
+    };
+    _webSocket.onclose = function() {
+      console.log('Disconnected.');
+      _webSocket = null;
+    };
+  }
+
+  function disconnect() {
+    if (_webSocket != null) {
+      console.log('Disconnecting...');
+      _webSocket.close();
+      _webSocket = null;
+    }
+  }
+
+  connect();
 }
 
 export default {
@@ -44,6 +74,10 @@ export default {
     console.log("initApp");
     if  (typeof(external) == "object" && typeof(external.invoke) != "undefined")
       _isWebview = true;
+    if(_isWebview == false){
+      init_ws();
+    }
+      
   },
   exit(){
     return _callAPI("exit") ;
@@ -60,4 +94,8 @@ export default {
     console.log("progress_dialog_percent : " + percent + "%");
     window.vm_app.progress_dialog_percent(percent);
   },
+  sendWS(text){
+    if(_webSocket)
+      _webSocket.send(text);
+  }
 }

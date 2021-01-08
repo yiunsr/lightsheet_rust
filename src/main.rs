@@ -1,22 +1,23 @@
-use std::process;
 use std::time::Instant;
+use std::time::Duration;
 use web_view::*;
 use webbrowser;
 use serde_json::{Value, Map};
 
+use actix::{Actor, Addr};
+use actix::prelude::{StreamHandler, Message};
 use actix_rt;
 use actix_web::{
     get, body::Body, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
-use futures::future::Future;
+use actix_web::Error as AW_Error;
+use actix_web_actors::ws;
+
 use mime_guess::from_path;
 use rust_embed::RustEmbed;
 use qstring::QString;
 
 use std::{borrow::Cow, sync::mpsc, thread};
-use std::sync::mpsc::{{Sender, Receiver}};
-use std::sync::Mutex;
-
-
+use std::sync::mpsc::{Sender, Receiver};
 use datatable::csv_reader;
 
 mod bridge;
@@ -131,11 +132,63 @@ async fn simulated_api(req: HttpRequest) -> String {
     // ret
     "Test".to_string()
 }
+/// Define HTTP actor
+struct MyWs;
+
+impl Actor for MyWs {
+    type Context = ws::WebsocketContext<Self>;
+}
+
+/// Handler for ws::Message message
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWs {
+    fn handle(
+        &mut self,
+        msg: Result<ws::Message, ws::ProtocolError>,
+        ctx: &mut Self::Context,
+    ) {
+        match msg {
+            Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
+            Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
+            Ok(ws::Message::Text(text)) => {
+                ctx.text(text)
+            },
+            _ => (),
+        }
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+struct RegisterWSClient {
+    addr: Addr<MyWs>,
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+struct ServerEvent {
+    event: String,
+}
+
+struct ServerMonitor {
+    listeners: Vec<Addr<MyWs>>,
+}
+
+async fn ws_index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, AW_Error> {
+    let resp = ws::start(MyWs{}, &req, stream);
+    println!("{:?}", resp);
+    resp
+}
+
 
 fn main() {
     hide_console_window();
     let (server_tx, server_rx) = mpsc::channel();
     let (port_tx, port_rx) = mpsc::channel();
+    // webview response(for release)
+    let (wv_res_tx, wv_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
+
+    // websocket response(for debug)
+    let (ws_res_tx, ws_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
 
     // start actix web server in separate thread
     thread::spawn(move || {
@@ -143,6 +196,7 @@ fn main() {
         let sys = actix_rt::System::new("Light Sheet");
         let server = HttpServer::new(
             || App::new()
+            .route("/ws/", web::get().to(ws_index))
             .service(simulated_api)
             .route("*", web::get().to(assets)))
             .bind(bind_url)
@@ -167,7 +221,7 @@ fn main() {
     // start web view in current thread
     // and point it to a port that was bound
     // to actix web server
-    web_view::builder()
+    let webview = web_view::builder()
         .title("Lightsheet")
         .content(Content::Url(format!("http://127.0.0.1:{}/index.html", port)))
         .size(800, 600)
@@ -176,8 +230,23 @@ fn main() {
         .debug(true)
         .user_data(0)
         .invoke_handler(bridge::invoke_handler)
-        .run()
+        .build()
         .unwrap();
+    
+    let handle = webview.handle();
+    thread::spawn(move || loop {
+        {
+            handle
+            .dispatch(move |webview| {
+                // bridge::invoke_handler(webview, )
+                Ok(())
+            })
+            .unwrap();
+        }
+        thread::sleep(Duration::from_secs(1));
+    });
+
+    webview.run().unwrap();
 
     // gracefully shutdown actix web server
     // let _ = server.stop(true).wait();
