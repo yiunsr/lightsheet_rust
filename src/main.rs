@@ -1,11 +1,10 @@
-use std::time::Instant;
 use std::time::Duration;
-use web_view::*;
+use web_view::Content;
 use webbrowser;
 use serde_json::{Value, Map};
 
-use actix::{Actor, Addr};
-use actix::prelude::{StreamHandler, Message};
+use actix::{Actor, Addr, AsyncContext};
+use actix::prelude::{StreamHandler, Message, Context, Handler};
 use actix_rt;
 use actix_web::{
     get, body::Body, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
@@ -157,6 +156,14 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWs {
     }
 }
 
+impl Handler<ServerEvent> for MyWs {
+    type Result = ();
+
+    fn handle(&mut self, msg: ServerEvent, ctx: &mut Self::Context) {
+        ctx.text(msg.event);
+    }
+}
+
 #[derive(Message)]
 #[rtype(result = "()")]
 struct RegisterWSClient {
@@ -173,10 +180,44 @@ struct ServerMonitor {
     listeners: Vec<Addr<MyWs>>,
 }
 
-async fn ws_index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, AW_Error> {
-    let resp = ws::start(MyWs{}, &req, stream);
-    println!("{:?}", resp);
-    resp
+impl Actor for ServerMonitor {
+    type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        println!("ServerMonitor started");
+        ctx.run_interval(Duration::from_millis(200), |act, _| {
+            for l in &act.listeners {
+                l.do_send(ServerEvent{ event: String::from("Event:") });
+            }
+        });
+    }
+}
+
+impl Handler<RegisterWSClient> for ServerMonitor {
+    type Result = ();
+
+    fn handle(&mut self, msg: RegisterWSClient, _: &mut Context<Self>) {
+        self.listeners.push(msg.addr);
+    }
+}
+
+
+// async fn ws_index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, AW_Error> {
+//     let resp = ws::start(MyWs{}, &req, stream);
+//     println!("{:?}", resp);
+//     resp
+// }
+
+async  fn ws_index(
+    r: HttpRequest,
+    stream: web::Payload,
+    data: web::Data<Addr<ServerMonitor>>,
+) -> Result<HttpResponse, AW_Error> {
+    let (addr, res) = ws::start_with_addr(MyWs {}, &r, stream)?;
+
+    data.get_ref().do_send(RegisterWSClient { addr: addr });
+
+    Ok(res)
 }
 
 
@@ -194,9 +235,13 @@ fn main() {
     thread::spawn(move || {
         let bind_url = get_bind_url();
         let sys = actix_rt::System::new("Light Sheet");
+        let srvmon = ServerMonitor { listeners: vec![] }.start();
+
         let server = HttpServer::new(
-            || App::new()
-            .route("/ws/", web::get().to(ws_index))
+            move || App::new()
+            .data(srvmon.clone())
+            .service(web::resource("/ws/").route(web::get().to(ws_index)))
+            //.route("/ws/", web::get().to(ws_index))
             .service(simulated_api)
             .route("*", web::get().to(assets)))
             .bind(bind_url)
