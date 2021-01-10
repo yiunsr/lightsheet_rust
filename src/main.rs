@@ -1,6 +1,8 @@
 use std::time::Duration;
 use web_view::Content;
 use webbrowser;
+use lazy_static::lazy_static;
+
 use serde_json::{Value, Map};
 
 use actix::{Actor, Addr, AsyncContext};
@@ -16,6 +18,7 @@ use rust_embed::RustEmbed;
 use qstring::QString;
 
 use std::{borrow::Cow, sync::mpsc, thread};
+use std::sync::Arc;
 use std::sync::mpsc::{Sender, Receiver};
 use datatable::csv_reader;
 
@@ -177,36 +180,20 @@ struct ServerEvent {
 }
 
 struct ServerMonitor {
-    listeners: Vec<Addr<MyWs>>,
+    listener: Option<Box<Addr<MyWs>>>,
 }
 
-impl Actor for ServerMonitor {
-    type Context = Context<Self>;
 
-    fn started(&mut self, ctx: &mut Self::Context) {
-        println!("ServerMonitor started");
-        ctx.run_interval(Duration::from_millis(200), |act, _| {
-            for l in &act.listeners {
-                l.do_send(ServerEvent{ event: String::from("Event:") });
-            }
-        });
-    }
-}
 
 impl Handler<RegisterWSClient> for ServerMonitor {
     type Result = ();
 
     fn handle(&mut self, msg: RegisterWSClient, _: &mut Context<Self>) {
-        self.listeners.push(msg.addr);
+        // self.listeners.push(msg.addr);
+        self.listener = Some(Box::new(msg.addr));
     }
 }
 
-
-// async fn ws_index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, AW_Error> {
-//     let resp = ws::start(MyWs{}, &req, stream);
-//     println!("{:?}", resp);
-//     resp
-// }
 
 async  fn ws_index(
     r: HttpRequest,
@@ -214,28 +201,36 @@ async  fn ws_index(
     data: web::Data<Addr<ServerMonitor>>,
 ) -> Result<HttpResponse, AW_Error> {
     let (addr, res) = ws::start_with_addr(MyWs {}, &r, stream)?;
-
     data.get_ref().do_send(RegisterWSClient { addr: addr });
-
     Ok(res)
 }
-
 
 fn main() {
     hide_console_window();
     let (server_tx, server_rx) = mpsc::channel();
     let (port_tx, port_rx) = mpsc::channel();
-    // webview response(for release)
+    // let (ws_res_tx, ws_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
+    // let (wv_req_tx, wv_req_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
     let (wv_res_tx, wv_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
-
-    // websocket response(for debug)
-    let (ws_res_tx, ws_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
+    
+    impl Actor for ServerMonitor {
+        type Context = Context<Self>;
+    
+        fn started(&mut self, ctx: &mut Self::Context) {
+            println!("ServerMonitor started");
+            ctx.run_interval(Duration::from_millis(200), |act, _| {
+                if let Some(l) = &act.listener {
+                    l.do_send(ServerEvent{ event: String::from("Event:") });
+                };
+            });
+        }
+    }
 
     // start actix web server in separate thread
     thread::spawn(move || {
         let bind_url = get_bind_url();
         let sys = actix_rt::System::new("Light Sheet");
-        let srvmon = ServerMonitor { listeners: vec![] }.start();
+        let srvmon = ServerMonitor { listener: None }.start();
 
         let server = HttpServer::new(
             move || App::new()
@@ -279,11 +274,16 @@ fn main() {
         .unwrap();
     
     let handle = webview.handle();
+    // let thread_wv_res_rx = mpsc::Sender::clone(&wv_res_rx);
     thread::spawn(move || loop {
         {
+            let result_res = wv_res_rx.recv();
             handle
-            .dispatch(move |webview| {
+            .dispatch(move |wv| {
                 // bridge::invoke_handler(webview, )
+                if let Ok(res) = result_res {
+                    wv.eval(&res);
+                }
                 Ok(())
             })
             .unwrap();
