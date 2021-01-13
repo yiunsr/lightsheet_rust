@@ -1,8 +1,8 @@
 use std::time::Duration;
-use std::rc::Rc;
-use std::thread;
 use std::sync::Arc;
 use std::cell::{RefCell, RefMut};
+use std::sync::mpsc::{Sender, Receiver};
+use std::thread;
 use tinyfiledialogs as tfd;
 use tinyfiledialogs::MessageBoxIcon;
 use serde_json::{Map, Value, to_string};
@@ -38,7 +38,7 @@ pub fn unwrap_value_or(value:Option<&Value>, default_: String) -> String {
     }
 }
 
-pub fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
+pub fn invoke_handler(wv: &mut WebView<usize>,  rx:&Sender<String>, arg: &str) -> WVResult {
     let parsed_json:Value = serde_json::from_str(arg).unwrap();
     let parsed_json: Map<String, Value> = parsed_json.as_object().unwrap().clone();
     let api = parsed_json["api"].as_str().unwrap().to_string();
@@ -56,13 +56,12 @@ pub fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
     }
 
     let opt_wv = Some(wv);
-    invoke_handler_internal(opt_wv, &api, cb, param);
-    
+    let js = invoke_handler_internal(opt_wv, rx,&api, cb, param);
     Ok(())
 }
 
-pub fn invoke_handler_internal(opt_wv: Option<&mut WebView<usize>>, 
-        api:&str, cb: String, param: &Map<String, Value>)-> String {
+pub fn invoke_handler_internal(opt_wv: Option<&mut WebView<usize>>, rx:&Sender<String>,
+        api:&str, cb: String, param: &Map<String, Value>)-> () {
     let mut js_result:String = "".to_string();
     match api {
         "simulated_api_echo"=>{
@@ -108,14 +107,15 @@ pub fn invoke_handler_internal(opt_wv: Option<&mut WebView<usize>>,
                     manager::open_file(filepath.to_string(), |percent:u32| -> () {
                         println!("{}", percent);
                         let js1 = format!("common.progress_dialog_percent({})", percent);
-                        let mut arc_rfc_wv3 = arc_rfc_wv.clone();
-                        let mut aref1 = arc_rfc_wv3.borrow_mut();
-                        aref1.eval(&js1);
+                        rx.send(js1).unwrap();
+                        thread::sleep(Duration::from_millis(10));
+                        //aref1.eval(&js1);
                     });
                     {
                         let mut aref0 = arc_rfc_wv.borrow_mut();
                         let js0 = format!("common.hide_progress_dialog()");
                         aref0.eval(&js0);
+                        thread::sleep(Duration::from_millis(200));
                     }
                 },
                 Null => {   
@@ -152,5 +152,7 @@ pub fn invoke_handler_internal(opt_wv: Option<&mut WebView<usize>>,
         },
         _ => unimplemented!(),
     };
-    js_result
+    if js_result != "" {
+        rx.send(js_result).unwrap();
+    }
 }

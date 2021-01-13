@@ -1,6 +1,6 @@
 import webApi from "./webApi"
 
-var WS_URI = 'ws://localhost:9010/ws/';
+var WS_URI = 'ws://127.0.0.1:9010/ws/';
 var _isWebview = false;
 var _webSocket = null;
 
@@ -72,11 +72,10 @@ export default {
   },
   initApp(){
     console.log("initApp");
-    if  (typeof(external) == "object" && typeof(external.invoke) != "undefined")
+    if  (typeof(external) == "object" && typeof(external.invoke) != "undefined"){
       _isWebview = true;
-    if(_isWebview == false){
-      init_ws();
     }
+    init_ws();
       
   },
   exit(){
@@ -97,5 +96,8 @@ export default {
   sendWS(text){
     if(_webSocket)
       _webSocket.send(text);
-  }
+  },
+  get_ws(){
+    return _webSocket;
+  },
 }

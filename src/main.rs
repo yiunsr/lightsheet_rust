@@ -1,8 +1,10 @@
 use std::time::Duration;
-use web_view::Content;
-use webbrowser;
-use lazy_static::lazy_static;
+use std::sync::Arc;
+use std::{borrow::Cow, sync::mpsc, thread};
+use std::sync::mpsc::{Sender, Receiver};
 
+use web_view::Content;
+use web_view::{{ WebView, WVResult }};
 use serde_json::{Value, Map};
 
 use actix::{Actor, Addr, AsyncContext};
@@ -17,9 +19,6 @@ use mime_guess::from_path;
 use rust_embed::RustEmbed;
 use qstring::QString;
 
-use std::{borrow::Cow, sync::mpsc, thread};
-use std::sync::Arc;
-use std::sync::mpsc::{Sender, Receiver};
 use datatable::csv_reader;
 
 mod bridge;
@@ -179,10 +178,25 @@ struct ServerEvent {
     event: String,
 }
 
-struct ServerMonitor {
+struct ServerMonitor{
     listener: Option<Box<Addr<MyWs>>>,
+    ws_res_rx: Arc<Receiver<String>>,
 }
 
+impl Actor for ServerMonitor{
+    type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        println!("ServerMonitor started");
+        let ws_res_rx2 = self.ws_res_rx.clone();
+        ctx.run_interval(Duration::from_millis(20), move|act, _| {
+            let ws_res = ws_res_rx2.recv();
+            if let Some(l) = &act.listener {
+                l.do_send(ServerEvent{ event: "Start".to_string() });
+            };
+        });
+    }
+}
 
 
 impl Handler<RegisterWSClient> for ServerMonitor {
@@ -205,38 +219,30 @@ async  fn ws_index(
     Ok(res)
 }
 
+
+
 fn main() {
     hide_console_window();
+
     let (server_tx, server_rx) = mpsc::channel();
     let (port_tx, port_rx) = mpsc::channel();
-    // let (ws_res_tx, ws_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
+    let (ws_res_tx, ws_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
     // let (wv_req_tx, wv_req_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
-    let (wv_res_tx, wv_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
+    // let (wv_res_tx, wv_res_rx):(Sender<String>, Receiver<String>) = mpsc::channel();
     
-    impl Actor for ServerMonitor {
-        type Context = Context<Self>;
-    
-        fn started(&mut self, ctx: &mut Self::Context) {
-            println!("ServerMonitor started");
-            ctx.run_interval(Duration::from_millis(200), |act, _| {
-                if let Some(l) = &act.listener {
-                    l.do_send(ServerEvent{ event: String::from("Event:") });
-                };
-            });
-        }
-    }
 
     // start actix web server in separate thread
     thread::spawn(move || {
         let bind_url = get_bind_url();
         let sys = actix_rt::System::new("Light Sheet");
-        let srvmon = ServerMonitor { listener: None }.start();
+        let srvmon = ServerMonitor{
+            listener: None,  ws_res_rx: Arc::new(ws_res_rx).clone()}.start();
 
         let server = HttpServer::new(
             move || App::new()
             .data(srvmon.clone())
-            .service(web::resource("/ws/").route(web::get().to(ws_index)))
-            //.route("/ws/", web::get().to(ws_index))
+            //.service(web::resource("/ws/").route(web::get().to(ws_index)))
+            .route("/ws/", web::get().to(ws_index))
             .service(simulated_api)
             .route("*", web::get().to(assets)))
             .bind(bind_url)
@@ -258,9 +264,6 @@ fn main() {
     let port = port_opt.unwrap_or(default_port);
     let server = server_rx.recv().unwrap();
 
-    // start web view in current thread
-    // and point it to a port that was bound
-    // to actix web server
     let webview = web_view::builder()
         .title("Lightsheet")
         .content(Content::Url(format!("http://127.0.0.1:{}/index.html", port)))
@@ -269,28 +272,11 @@ fn main() {
         .resizable(true)
         .debug(true)
         .user_data(0)
-        .invoke_handler(bridge::invoke_handler)
+        .invoke_handler(move|wv, arg| {
+            bridge::invoke_handler(wv, &ws_res_tx, arg)
+        })
         .build()
         .unwrap();
-    
-    let handle = webview.handle();
-    // let thread_wv_res_rx = mpsc::Sender::clone(&wv_res_rx);
-    thread::spawn(move || loop {
-        {
-            let result_res = wv_res_rx.recv();
-            handle
-            .dispatch(move |wv| {
-                // bridge::invoke_handler(webview, )
-                if let Ok(res) = result_res {
-                    wv.eval(&res);
-                }
-                Ok(())
-            })
-            .unwrap();
-        }
-        thread::sleep(Duration::from_secs(1));
-    });
-
     webview.run().unwrap();
 
     // gracefully shutdown actix web server
