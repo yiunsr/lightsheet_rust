@@ -1,4 +1,3 @@
-use std::io;
 use std::io::Seek;
 use std::io::SeekFrom;
 use std::io::Read;
@@ -11,8 +10,6 @@ use std::convert::TryFrom;
 use csv::Reader;
 use log;
 use chardetng::EncodingDetector;
-use encoding_rs_io::DecodeReaderBytes;
-use encoding_rs_io::DecodeReaderBytesBuilder;
 use rusqlite::Connection;
 use rusqlite::NO_PARAMS;
 
@@ -36,39 +33,6 @@ macro_rules! skip_fail {
             }
         }
     };
-}
-
-pub fn csv_open(file: &mut File) -> 
-		Result< (Reader<DecodeReaderBytes<&mut File, Vec<u8>>>, u32), Box<dyn Error>> {
-    
-    let mut buffer = [0; 1024*10];
-
-    file.read(&mut buffer)?;
-	file.seek(SeekFrom::Start(0))?;
-	
-
-    let mut det = EncodingDetector::new();
-    det.feed(&buffer, true);
-    let enc = det.guess(None, false);
-    log::info!("file characterset detect: {}", enc.name());
-
-    let str_buffer = String::from_utf8_lossy(&buffer);
-	let sep = get_col_sep(&str_buffer);
-	let col_count = get_col_count(&str_buffer, sep);
-    
-    // let transcoded = DecodeReaderBytesBuilder::new()
-    //     .encoding(Some(enc))
-	//     .build(file);
-
-	let transcoded = DecodeReaderBytesBuilder::new()
-        .encoding(Some(enc))
-		//.build_with_buffer(file, vec![0; 1024 * (1 << 10)]).unwrap();
-		.build_with_buffer(file, vec![0; 1024 * 4]).unwrap();
-    
-    let rdr = csv::ReaderBuilder::new()
-        .delimiter(sep)
-        .from_reader(transcoded);
-	Ok((rdr, col_count))
 }
 
 pub fn get_col_sep(readedstr:&str) -> u8 {
@@ -98,16 +62,38 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), 
 {
 
     // Read CSV File
-    
-    // 딱히 삭제가 안되더라도 무시한다. 
+	// 딱히 삭제가 안되더라도 무시한다. 
 	fs::remove_file(dbfile.clone());
-	
+		
 	let file= &mut File::open(csvfile).unwrap();
 	//let file_pos = file.seek(SeekFrom::Current(0)).unwrap();
 	let total_file_byte = file.metadata().unwrap().len();
-	let (reader, col_count) = csv_open(file)?;
-	let mut iter = reader.into_records();
+	// let (mut reader, col_count) = csv_open(file)?;
+
+	let mut buffer = [0; 1024*10];
+
+	file.read(&mut buffer)?;
+	file.seek(SeekFrom::Start(0))?;
+
+	let mut det = EncodingDetector::new();
+	det.feed(&buffer, true);
+	let enc = det.guess(None, false);
+	log::info!("file characterset detect: {}", enc.name());
+
+	let str_buffer = String::from_utf8_lossy(&buffer);
+	let sep = get_col_sep(&str_buffer);
+	let col_count = get_col_count(&str_buffer, sep);
+
+	let mut decoder = enc.new_decoder();
+
+
+	let mut rdr = csv::ReaderBuilder::new().delimiter(sep)
+		.from_reader(file);
+	//.delimiter(sep);
+	//let iter = rdr.byte_records();
+
 	let mut old_percent = 0u32;
+	let ucol_count:usize = col_count as usize;
 
 	// 메모리 데이터베이스
 	// let conn = Connection::open_in_memory()?;
@@ -126,6 +112,7 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), 
 
 	let i_query = db_utils::insert_query(&table_name, col_count);
 	let mut row_index:u32 = 1;
+	let mut iter = rdr.into_byte_records();
 
 	let tx = conn.transaction()?;
 	{
@@ -134,26 +121,35 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), 
 		loop {
 			// Read the position immediately before each record.
 			// let next_pos = iter.reader().position().clone();
-			let item = iter.next();
-			if item.is_none() {
+			let opt_result_byterecord = iter.next();
+			if opt_result_byterecord .is_none(){
 				break;
 			}
-			let mut fields:Vec<&str> = Vec::new();
-			let record = item.unwrap()?;
-			let row_idex_str = row_index.to_string().clone();
-			fields.push(&row_idex_str);
+			let next_pos = iter.reader().position().clone();
+			let record = opt_result_byterecord.unwrap().unwrap();
+
+			//i_stmt.raw_bind_int32(1 as usize, row_index as i32)?;
+			i_stmt.raw_bind_parameter(1 as usize, row_index as i32)?;
+			
+			let mut col_index = 2;
+			//let row_idex_str = row_index.to_string().clone();
+			//fields.push(&row_idex_str);
 			for field in record.iter() {
-				fields.push(field);
+				let s= enc.decode_without_bom_handling_and_without_replacement(field).unwrap();
+				//i_stmt.raw_bind_text_static(col_index, s.as_bytes())?;
+				i_stmt.raw_bind_parameter(col_index, s.as_bytes())?;
+				col_index += 1;
 			}
+			//i_stmt.execute(params)
 			row_index = row_index + 1;
-			i_stmt.execute(fields)?;
+			//i_stmt.execute_with_bound_parameters();
+			i_stmt.raw_execute();
 			
 			let reader_ = iter.reader_mut().get_mut();
 			// reader.rdr.nread 에 접근해서 read 한 byte 를 접근할 수 있으면 좋겠다.
 			
 			// next_pos.byte() 는 100% 가 넘는 문제가 생김
-			let nread = reader_.rdr.nread;
-			// let read_byte = next_pos.byte();
+			let nread = next_pos.byte();
 			let cur_percent:u32 = u32::try_from(nread as u64 * 100 / total_file_byte ).unwrap();
 			if cur_percent != old_percent {
 				if cur_percent < 100{
@@ -171,19 +167,11 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), 
 	//conn.execute("Commit;", NO_PARAMS)?;
 
 	println!("total row_index : {}", row_index);
-	
+
 	Ok(TableInfo {
 		conn: conn,
 		table_name: dbfile,
 		col_len: col_count,
 		row_len: row_index,
 	})
-
-
-	// elapsed := time.Since(start)
-	// log.Printf("Total count :  %d", total_count)
-	// log.Printf("Total spend Time :  %s", elapsed)
-	// d2 := elapsed.Seconds()
-	// log.Printf("1s insert :  %f", float64(total_count)/d2)
-	// return db, table_name, records, total_count, col_count
 }

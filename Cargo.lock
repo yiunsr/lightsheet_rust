@@ -664,14 +664,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "encoding_rs_io"
-version = "0.1.7"
-source = "git+https://github.com/yiunsr/encoding_rs_io.git#3e218264e9feaafd2bdf53ea93c8ea4be8e727da"
-dependencies = [
- "encoding_rs",
-]
-
-[[package]]
 name = "enum-as-inner"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1159,7 +1151,6 @@ dependencies = [
  "chardetng",
  "csv",
  "encoding_rs",
- "encoding_rs_io",
  "futures",
  "lazy_static",
  "log",
