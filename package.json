@@ -1,0 +1,14 @@
+{
+  "name": "lightsheet_rust",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "https://github.com/yiunsr/lightsheet_rust.git",
+  "author": "yiunsr <yiunsr@hanmail.net>",
+  "license": "Apache",
+  "dependencies": {
+    "tauri": "^0.14.1"
+  },
+  "scripts": {
+    "tauri": "tauri"
+  }
+}

@@ -4,43 +4,42 @@
     // 자세한 내용을 보려면 https://go.microsoft.com/fwlink/?linkid=830387을(를) 방문하세요.
     "version": "0.2.0",
     "configurations": [
-        
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'lightsheet_rust'",
+            "name": "Debug executable 'lightsheet'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=lightsheet_rust/",
-                    "--package=lightsheet_rust"
+                    "--bin=lightsheet",
+                    "--package=lightsheet"
                 ],
                 "filter": {
-                    "name": "lightsheet_rust",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}/src-tauri"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'lightsheet_rust'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=lightsheet_rust",
-                    "--package=lightsheet_rust"
-                ],
-                "filter": {
-                    "name": "lightsheet_rust",
+                    "name": "lightsheet",
                     "kind": "bin"
                 }
             },
             "args": [],
             "cwd": "${workspaceFolder}"
         },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'lightsheet'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=lightsheet",
+                    "--package=lightsheet"
+                ],
+                "filter": {
+                    "name": "lightsheet",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
     ]
 }
