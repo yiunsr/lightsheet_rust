@@ -1,14 +1,8 @@
 {
-  "build": {
-    "distDir": "../frontend/dist",
-    "devPath": "http://127.0.0.1:4000",
-    "beforeDevCommand": "",
-    "beforeBuildCommand": ""
-  },
   "ctx": {},
   "tauri": {
     "embeddedServer": {
-      "active": false
+      "active": true
     },
     "bundle": {
       "active": true,
@@ -38,11 +32,11 @@
       },
       "exceptionDomain": ""
     },
-    "allowlist": {                 
+    "allowlist": {
       "all": true
     },
     "window": {
-      "title": "Lightsheet",
+      "title": "lightsheet",
       "width": 800,
       "height": 600,
       "resizable": true,

@@ -1,11 +1,11 @@
 [package]
-name = "lightsheet"
+name = "lightsheet-rust"
 version = "0.1.0"
 description = "A Tauri App"
 authors = [ "you" ]
 license = ""
 repository = ""
-default-run = "lightsheet"
+default-run = "lightsheet-rust"
 edition = "2018"
 build = "src/build.rs"
 
@@ -22,5 +22,5 @@ embedded-server = [ "tauri/embedded-server" ]
 no-server = [ "tauri/no-server" ]
 
 [[bin]]
-name = "lightsheet"
+name = "lightsheet-rust"
 path = "src/main.rs"
