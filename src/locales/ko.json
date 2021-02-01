@@ -1,0 +1,18 @@
+{
+  "message": "안녕i18n !!",
+  "menu": {
+    "file": "파일",
+    "file_new": "새파일",
+    "file_open": "열기",
+    "file_save": "저장",
+    "file_exit": "끝내기",
+
+    "edit": "편집",
+    "edit_cut": "자르기",
+    "edit_copy": "복사",
+    "edit_paste": "붙이기",
+
+    "help": "도움말",
+    "help_about": "정보"
+  }
+}

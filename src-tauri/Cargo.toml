@@ -2,7 +2,7 @@
 name = "lightsheet-rust"
 version = "0.1.0"
 description = "A Tauri App"
-authors = [ "you" ]
+authors = [ "Yiun Seungryong" ]
 license = ""
 repository = ""
 default-run = "lightsheet-rust"
