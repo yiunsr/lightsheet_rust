@@ -247,9 +247,26 @@ export default {
           {
             text: "Debug",
             menu: [
-              { text: "alert test", click:() =>  common.callAPI("alert", {msg: "text"}) },
-              { text: "title test", click:() =>  common.callAPI("settitle", {title: "LightSheet Test"}) },
-              { text: "prompt test", click:() =>  common.callAPI("prompt", {msg: "User Input Test"}) },
+              { text: "Title test", click:() =>  common.setTitle("setTitle (한국어)") },
+              { text: "Alert test", click:() =>  alert("Alert Test (한국어)") },
+              { text: "confirm test", click:() =>  {
+                window.__menu__confirm_test = function(result){
+                  alert(""+result);
+                };
+                common.confirm("Confirm Test(한국어)", "__menu__confirm_test", "입력");
+              }},
+              { text: "File Open Dialog", click:() =>  {
+                window.__menu__fileopendialog_test = function(result){
+                  alert(""+result);
+                };
+                common.fileOpenDialog("__menu__fileopendialog_test");
+              }},
+              { text: "Prompt test", click:() =>   {
+                window.__menu__prompt_test = function(result){
+                  alert(""+result);
+                };
+                common.prompt("Prompt test", "__menu__prompt_test");
+              }},
               { text: "simulated_api_echo", click:() =>  
                 common.callAPI("simulated_api_echo", {msg: "simulated_api_echo Test"}) },
             ]
