@@ -1,7 +1,7 @@
 {
   "ctx": {},
   "build":{
-    "devPath": "http://localhost:8165"
+    "devPath": "http://localhost:8080"
   },
   "tauri": {
     "embeddedServer": {

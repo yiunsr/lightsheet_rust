@@ -1,8 +1,6 @@
 import webApi from "./webApi"
 
-var WS_URI = 'ws://127.0.0.1:9010/ws/';
-var _isWebview = false;
-var _webSocket = null;
+const isTauri = !!window.__TAURI_INVOKE_HANDLER__;
 
 async function _callAPI(api, param, cb){  // eslint-disable-line no-unused-vars
   if(param == undefined){
@@ -15,7 +13,7 @@ async function _callAPI(api, param, cb){  // eslint-disable-line no-unused-vars
   var reqParamStr = JSON.stringify(reqParam);
   console.log("js api : " + api);
 
-  if(_isWebview){
+  if(isTauri){
     external.invoke(reqParamStr);
   }
   else{
@@ -23,35 +21,35 @@ async function _callAPI(api, param, cb){  // eslint-disable-line no-unused-vars
   }
 }
 
-function init_ws(){
-  function connect() {
-    disconnect();
-    _webSocket = new WebSocket(WS_URI);
-    console.log('Connecting...');
-    _webSocket.onopen = function() {
-      console.log('Connected.');
-    };
-    _webSocket.onmessage = function(e) {
-      console.log('Received: ' + e.data);
-    };
-    _webSocket.onclose = function() {
-      console.log('Disconnected.');
-      _webSocket = null;
-    };
-  }
-
-  function disconnect() {
-    if (_webSocket != null) {
-      console.log('Disconnecting...');
-      _webSocket.close();
-      _webSocket = null;
-    }
-  }
-
-  connect();
-}
 
 export default {
+  setTitle(title){
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'setTitle',
+      title: title
+    })
+  },
+  confirm(msg, cb){
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'confirm',
+      msg: msg,
+      cb: cb,
+    });
+  },
+  prompt(msg, cb, default_input = ""){
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'prompt',
+      msg: msg,
+      default_input: default_input,
+      cb: cb,
+    });
+  },
+  fileOpenDialog(cb){
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'FileOpenDialog',
+      cb: cb,
+    });
+  },
   callAPI(api, param, cb){  // eslint-disable-line no-unused-vars
     return _callAPI(api, param, cb);
   },
@@ -71,33 +69,18 @@ export default {
     }
   },
   initApp(){
-    console.log("initApp");
-    if  (typeof(external) == "object" && typeof(external.invoke) != "undefined"){
-      _isWebview = true;
-    }
-    init_ws();
-      
+    console.log("initApp");  
   },
   exit(){
     return _callAPI("exit") ;
   },
-  show_progress_dialog(title){
-    console.log("show_progress_dialog");
-    window.vm_app.show_progress_dialog(title);
-  },
-  hide_progress_dialog(){
-    console.log("hide_progress_dialog");
-    window.vm_app.hide_progress_dialog();
-  },
-  progress_dialog_percent(percent){
-    console.log("progress_dialog_percent : " + percent + "%");
-    window.vm_app.progress_dialog_percent(percent);
-  },
-  sendWS(text){
-    if(_webSocket)
-      _webSocket.send(text);
-  },
-  get_ws(){
-    return _webSocket;
-  },
+}
+
+if(isTauri){
+  window.alert = function (msg) {
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'alert',
+      msg: msg
+    })
+  }
 }
