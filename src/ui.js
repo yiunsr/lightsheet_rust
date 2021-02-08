@@ -2,20 +2,14 @@ import common from './common.js'
 
 export default {
   fileOpen(){
-    common.callAPI("open", {}, "ui.retFileOpen");
+    common.fileOpenDialog("ui._fileOpenStart");
   },
-  retFileOpen(success, data){
-    if(success === false) return;
-    var filepath = data["filepath"];
+  _fileOpenStart(filepath){
     if(filepath === null || filepath =="") return;
-    common.callAPI("openfile", {filepath:filepath});
-    let percent = 0;
-    common.show_progress_dialog();
-    while(percent <= 100){
-      let ret = common.callAPI("openfilePercent", {});
-      percent = ret["percent"];
-      common.progress_dialog_percent(percent);
-    }
+    common.show_progress_dialog("File Open...");
+    common.fileOpen(filepath, "ui.__fileOpenEnd");
+  },
+  _fileOpenEnd(){
     common.hide_progress_dialog();
-  }
+  },
 }

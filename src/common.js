@@ -1,26 +1,4 @@
-import webApi from "./webApi"
-
 const isTauri = !!window.__TAURI_INVOKE_HANDLER__;
-
-async function _callAPI(api, param, cb){  // eslint-disable-line no-unused-vars
-  if(param == undefined){
-    param = {};
-  }
-  if(cb == undefined){
-    cb = "";
-  }
-  var reqParam = {api: api, param: param, cb: cb};
-  var reqParamStr = JSON.stringify(reqParam);
-  console.log("js api : " + api);
-
-  if(isTauri){
-    external.invoke(reqParamStr);
-  }
-  else{
-    webApi.invoke(reqParamStr)
-  }
-}
-
 
 export default {
   setTitle(title){
@@ -44,35 +22,32 @@ export default {
       cb: cb,
     });
   },
-  fileOpenDialog(cb){
+  fileOpen(path, cb){
     window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'FileOpenDialog',
+      cmd: 'fileOpen',
+      path: path,
       cb: cb,
     });
   },
-  callAPI(api, param, cb){  // eslint-disable-line no-unused-vars
-    return _callAPI(api, param, cb);
-  },
-  apiCallback(success, cb, result){
-    if(cb == ""){
-      console.log("[apiCallback] success : " + success);
-    }
-    else if(cb.includes(".")){
-      var _1st = cb.split(".")[0];
-      var _2nd = cb.split(".")[1];
-      window[_1st][_2nd](success, result);
-      console.log("[apiCallback] success : " + success + " cb : " + cb);
-    }
-    else{
-      console.log("[apiCallback] success : " + success + " cb : " + cb);
-      window[cb](success, result);
-    }
+  fileOpenDialog(cb){
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'fileOpenDialog',
+      cb: cb,
+    });
   },
   initApp(){
     console.log("initApp");  
   },
   exit(){
-    return _callAPI("exit") ;
+  },
+  show_progress_dialog(title){
+    window.vm.$children[0].show_progress_dialog(title);
+  },
+  hide_progress_dialog(){
+    window.vm.$children[0].hide_progress_dialog();
+  },
+  progress_dialog_percent(percent){
+    window.vm.$children[0].progress_dialog_percent(percent);
   },
 }
 
