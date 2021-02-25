@@ -234,13 +234,16 @@ export default {
             text: this.$t("menu.help"),
             menu: [
               { text: this.$t("menu.help_about"), icon: "help", 
-                click: () => common.callAPI(
-                  "alert", 
-                  {msg: "lightsheet_rust\nhttps://github.com/yiunsr/lightsheet_rust\nby Yiun Seungryong"}) 
+                click: () => {
+                  alert("lightsheet_rust\nhttps://github.com/yiunsr/lightsheet_rust\nby Yiun Seungryong");
+                }
               },
               { is: "separator" },
               { text: "Repository", icon: "exit_to_app",
-               click: () => common.callAPI("openurl",{url: "https://github.com/yiunsr/lightsheet_rust"}) },
+               click: () => {
+                 common.openURL("https://github.com/yiunsr/lightsheet_rust")
+               }
+              },
             ],
             menu_width: 220
           },
@@ -267,8 +270,10 @@ export default {
                 };
                 common.prompt("Prompt test", "__menu__prompt_test");
               }},
-              { text: "simulated_api_echo", click:() =>  
-                common.callAPI("simulated_api_echo", {msg: "simulated_api_echo Test"}) },
+              { text: "test", click:() =>  {
+                alert("test");
+                }
+              }
             ]
           },
           { is: "spacer" },

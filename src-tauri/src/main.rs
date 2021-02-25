@@ -15,10 +15,14 @@ use datatable::manager;
 mod cmd;
 
 fn main() {
-  let key = "OUT_DIR";
-  env::set_var(key, "D:\\workspace\\vscode\\lightsheet_rust\\src-tauri");
-  let config_path = env!("OUT_DIR");
-  println!("{}", config_path);
+  // let key = "TAURI_CONFIG";
+  // env::set_var(key, "{
+  //   \"ctx\": {},
+  //   \"build\":{
+  //     \"devPath\": \"http://localhost:8080\"
+  //   }");
+  // let config_path = option_env!("TAURI_CONFIG");
+  // println!("{}", config_path.unwrap());
   tauri::AppBuilder::new()
     .invoke_handler(|_webview, arg| {
       use cmd::Cmd::*;

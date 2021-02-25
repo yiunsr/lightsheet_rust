@@ -22,6 +22,12 @@ export default {
       cb: cb,
     });
   },
+  openURL(url){
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'open',
+      uri: url
+    });
+  },
   fileOpen(path, cb){
     window.__TAURI_INVOKE_HANDLER__({
       cmd: 'fileOpen',

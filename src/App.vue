@@ -58,7 +58,7 @@
     </v-app-bar>
 
     <v-main>
-      <StartPage/>
+      <router-view></router-view>
     </v-main>
 
     <v-dialog
@@ -91,7 +91,6 @@
 </template>
 
 <script>
-import StartPage from './components/StartPage';
 import AppMenu from './components/AppMenu';
 
 
@@ -99,7 +98,7 @@ export default {
   name: 'App',
 
   components: {
-    StartPage, AppMenu
+    AppMenu
   },
 
   data: () => ({

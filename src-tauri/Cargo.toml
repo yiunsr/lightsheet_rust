@@ -27,6 +27,7 @@ features = ["bundled"]
 [target."cfg(windows)".build-dependencies]
 winres = "0.1"
 
+
 [features]
 embedded-server = [ "tauri/embedded-server" ]
 no-server = [ "tauri/no-server" ]

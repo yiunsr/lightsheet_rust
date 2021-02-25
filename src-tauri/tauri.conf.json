@@ -8,7 +8,7 @@
       "active": true
     },
     "bundle": {
-      "active": true,
+      "active": true, 
       "targets": "all",
       "identifier": "com.tauri.dev",
       "icon": [

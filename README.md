@@ -10,3 +10,9 @@ yarn tauri:serve
 ```
 yarn tauri:build
 ```
+
+
+### Compile rust
+```
+OUT_DIR="D:/workspace/vscode/lightsheet_rust/src-tauri" cargo build
+```
