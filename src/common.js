@@ -55,6 +55,9 @@ export default {
   progress_dialog_percent(percent){
     window.vm.$children[0].progress_dialog_percent(percent);
   },
+  setStatusbar(status){
+    window.vm.$children[0].statusbar = status;
+  },
 }
 
 if(isTauri){

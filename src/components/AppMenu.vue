@@ -99,7 +99,7 @@
 
     <div class="bars" style="height:36px;">
       <vue-file-toolbar-menu v-for="(content, index) in bars_content" 
-        :key="'bar-'+index" :content="content" />
+        :key="'bar-'+index" :content="content"   />
     </div>
   </div>
 </template>
@@ -109,6 +109,7 @@ import Vue from 'vue'
 import VueFileToolbarMenu from 'vue-file-toolbar-menu';
 import common from '../common.js'
 import ui from '../ui.js'
+import router from '../router'
 // for dynamic css variables
 Vue.component("v-style", {
   render (createElement) { return createElement("style", this.$slots.default); }
@@ -143,7 +144,9 @@ export default {
                 hotkey: this.isMacLike ? "command+o" : "ctrl+o",
                 click: () => { 
                   ui.fileOpen();
-                } 
+                },
+                id: "menu__file_open",
+                title: this.$t("menu.file_open__sb"),
               },
               { 
                 text: this.$t("menu.file_save") + "...", 
@@ -270,8 +273,16 @@ export default {
                 };
                 common.prompt("Prompt test", "__menu__prompt_test");
               }},
-              { text: "test", click:() =>  {
-                alert("test");
+              { text: "Change Status", click:() =>   {
+                common.setStatusbar("statusbar 설정");
+              }},
+              { is: "separator" },
+              { text: "home", click:() =>  {
+                router.push({ path: '/' })
+                }
+              },
+              { text: "sheet", click:() =>  {
+                router.push({ path: '/sheet' })
                 }
               }
             ]
@@ -283,6 +294,8 @@ export default {
     isMacLike: () => /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform),
   },
 }
+
+
 </script>
 
 <style>

@@ -1,32 +1,63 @@
 <template>
-  <v-container>
-    <v-row class="text-center">
-      <v-col cols="12">
-        <v-img
-          :src="require('../assets/logo.svg')"
-          class="my-3"
-          contain
-          height="200"
-        />
-      </v-col>
-
-      <v-col class="mb-4">
-        <h1 class="display-2 font-weight-bold mb-3">
-          Welcome to Light Sheet
-        </h1>
-
-        <p class="subheading font-weight-regular">
-          Light Sheet is simple csv view and support simple sheet formula.
-        </p>
-      </v-col>
-    </v-row>
-  </v-container>
+  <div>
+    <div ref="mainGrid" style="width:100%;height:calc(100vh - 36px - 24px);"></div>
+  </div>
 </template>
 
 <script>
-  export default {
-    name: 'HelloWorld',
+  import('../../node_modules/slickgrid/slick.grid.css');
+  import('../../node_modules/slickgrid/slick-default-theme.css');
+  import('../assets/plugins-gdoc-style.css');
 
+  global.jQuery = require('jquery');
+  var $ = global.jQuery;
+  window.$ = $;
+  import 'jquery-ui';
+  import('../../node_modules/slickgrid/lib/jquery.event.drag-2.3.0.js');
+  import('../../node_modules/slickgrid/lib/jquery.event.drop-2.3.0.js');
+  // debugger; // eslint-disable-line no-debugger
+  import('../../node_modules/slickgrid/slick.core.js');
+  import('../../node_modules/slickgrid/slick.grid.js');
+  
+  export default {
+    name: 'GridSheet',
     data: () => ({}),
+    mounted: function(){
+      // debugger; // eslint-disable-line no-debugger
+      var columns = [
+        {id: "title", name: "Title", field: "title"},
+        {id: "duration", name: "Duration", field: "duration"},
+        {id: "%", name: "% Complete", field: "percentComplete"},
+        {id: "start", name: "Start", field: "start"},
+        {id: "finish", name: "Finish", field: "finish"},
+        {id: "effort-driven", name: "Effort Driven", field: "effortDriven"}
+      ];
+
+      var options = {
+        enableCellNavigation: true,
+        enableColumnReorder: false,
+        editable: false,
+        enableAddRow: false,
+        autoHeight: false,
+      };
+
+      var data = [];
+      for (var i = 0; i < 100000; i++) {
+        data[i] = {
+          title: "Task " + i,
+          duration: "5 days",
+          percentComplete: Math.round(Math.random() * 100),
+          start: "01/01/2009",
+          finish: "01/05/2009",
+          effortDriven: (i % 5 == 0)
+        };
+      }
+
+      const $el = this.$refs.mainGrid;
+      new window.Slick.Grid($el, data, columns, options);
+        
+    },
+    beforeCreate: function(){
+    }
   }
 </script>

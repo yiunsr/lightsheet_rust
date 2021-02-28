@@ -9,7 +9,7 @@ const routes = [
     component: StartPage
   },
   {
-    path: '/',
+    path: '/sheet',
     name: 'sheet',
     component: Sheet
   },

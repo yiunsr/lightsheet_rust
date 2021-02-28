@@ -61,6 +61,15 @@
       <router-view></router-view>
     </v-main>
 
+    <v-footer padless outlined a-0 height="24px">
+      <v-col
+        class="text-left py-0 subtitle-2"
+        cols="12"
+      >
+        {{ statusbar }}
+      </v-col>
+    </v-footer>
+
     <v-dialog
       v-model="progress_dialog" max-width="600" persistent
       content-class="v-app-bar"
@@ -103,6 +112,7 @@ export default {
 
   data: () => ({
     progress_dialog: false, progress_percent: 0, progress_dialog_title: "",
+    statusbar: "",
     //
   }),
   computed:{

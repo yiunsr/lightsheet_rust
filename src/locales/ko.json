@@ -4,6 +4,7 @@
     "file": "파일",
     "file_new": "새파일",
     "file_open": "열기",
+    "file_open__sb": "csv, txt 파일을 엽니다.",
     "file_save": "저장",
     "file_exit": "끝내기",
 

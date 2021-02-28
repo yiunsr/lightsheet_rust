@@ -25,7 +25,7 @@
 
 <script>
   export default {
-    name: 'HelloWorld',
+    name: 'StartPage',
 
     data: () => ({}),
   }
