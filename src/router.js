@@ -1,6 +1,7 @@
 import VueRouter from 'vue-router'
 import StartPage from './views/StartPage';
 import Sheet from './views/Sheet';
+import SheetTest from './views/SheetTest';
 
 const routes = [
   {
@@ -12,6 +13,11 @@ const routes = [
     path: '/sheet',
     name: 'sheet',
     component: Sheet
+  },
+  {
+    path: '/sheettest',
+    name: 'sheettest',
+    component: SheetTest
   },
   { path: '*', redirect: '/' }
 ]

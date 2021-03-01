@@ -281,8 +281,8 @@ export default {
                 router.push({ path: '/' })
                 }
               },
-              { text: "sheet", click:() =>  {
-                router.push({ path: '/sheet' })
+              { text: "sheettest", click:() =>  {
+                router.push({ path: '/sheettest' })
                 }
               }
             ]

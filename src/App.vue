@@ -1,10 +1,11 @@
 <template>
-  <v-app ref="app" :style="{background: $vuetify.theme.themes[themeMode].background}">
+  <v-app ref="app" 
+    :style="{background: $vuetify.theme.themes[themeMode].background}">
     <v-app-bar
       app
       height="36px"
       dense
-      class="pa-0"
+      class="pa-0 ls-menu-header"
     >
       <v-toolbar-title style="width:36px;text-align:center" 
         class="font-weight-black rounded secondary ">LS</v-toolbar-title>
@@ -98,6 +99,13 @@
 
   </v-app>
 </template>
+
+<style scoped>
+/*  .slick-cell.editable is z-idexL:11  */
+.ls-menu-header{
+  z-index: 12;
+}
+</style>
 
 <script>
 import AppMenu from './components/AppMenu';

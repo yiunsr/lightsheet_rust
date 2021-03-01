@@ -58,6 +58,14 @@ export default {
   setStatusbar(status){
     window.vm.$children[0].statusbar = status;
   },
+
+  get_rows(from, to){
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'getRows',
+      path: from,
+      cb: to,
+    });
+  },
 }
 
 if(isTauri){
