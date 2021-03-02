@@ -101,10 +101,10 @@
 </template>
 
 <style scoped>
-/*  .slick-cell.editable is z-idexL:11  */
-.ls-menu-header{
-  z-index: 12;
-}
+  /*  .slick-cell.editable is z-idexL:11  */
+  .v-app-bar.v-app-bar--fixed.ls-menu-header{
+    z-index: 15;
+  }
 </style>
 
 <script>

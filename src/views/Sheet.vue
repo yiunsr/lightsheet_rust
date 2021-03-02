@@ -6,13 +6,13 @@
 
 <script>
   require('../../node_modules/slickgrid/slick.grid.css');
-  require('../../node_modules/slickgrid/slick-default-theme.css');
+  //require('../../node_modules/slickgrid/slick-default-theme.css');
   require('../assets/plugins-gdoc-style.css');
 
   global.jQuery = require('jquery');
   var $ = global.jQuery;
   window.$ = $;
-  require('jquery-ui');
+  require('../../node_modules/slickgrid/lib/jquery-ui-1.11.3.min.js');
   require('../../node_modules/slickgrid/lib/jquery.event.drag-2.3.0.js');
   require('../../node_modules/slickgrid/lib/jquery.event.drop-2.3.0.js');
   // debugger; // eslint-disable-line no-debugger
