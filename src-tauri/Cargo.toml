@@ -19,14 +19,12 @@ chardetng = "0.1.10"
 encoding_rs = "0.8.26"
 tinyfiledialogs = "3.3.10"
 
-[dependencies.rusqlite]
-version = "0.24.2"
-features = ["bundled"]
-
+  [dependencies.rusqlite]
+  version = "0.24.2"
+  features = [ "bundled" ]
 
 [target."cfg(windows)".build-dependencies]
 winres = "0.1"
-
 
 [features]
 embedded-server = [ "tauri/embedded-server" ]
