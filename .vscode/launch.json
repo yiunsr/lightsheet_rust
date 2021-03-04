@@ -26,6 +26,15 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug OSX",
+            "program": "${workspaceRoot}/src-tauri/target/debug/lightsheet-rust",
+            "args": [],
+            "cwd": "${workspaceRoot}/src-tauri",
+            "sourceLanguages": ["rust"]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug unit tests in executable 'lightsheet_rust'",
             "cargo": {
                 "args": [
