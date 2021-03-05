@@ -13,7 +13,7 @@ body, BUTTON {
     border-color: transparent #CCCCCC #CCCCCC transparent;
     border-style: solid solid solid solid;
     /* When there are millions of rows, the border is broken. 2px prevents the border from breaking. */
-    border-width: 0px 1px 2px 0px;
+    border-width: 0px 1px 1px 0px;
     padding: 4px 4px 0px 6px;
     background-color: White;
     font: 9pt arial, sans-serif;

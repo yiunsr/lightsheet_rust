@@ -7,21 +7,11 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'lightsheet_rust'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=lightsheet_rust/",
-                    "--package=lightsheet_rust"
-                ],
-                "filter": {
-                    "name": "lightsheet_rust",
-                    "kind": "bin"
-                }
-            },
+            "name": "Debug Window",
+            "program": "${workspaceRoot}/src-tauri/target/debug/lightsheet-rust.exe",
             "args": [],
-            "cwd": "D:\\workspace\\vscode\\lightsheet_rust\\src-tauri",
-            "relativePathBase": "./src-tauri"
+            "cwd": "${workspaceRoot}/src-tauri",
+            "sourceLanguages": ["rust"]
         },
         {
             "type": "lldb",

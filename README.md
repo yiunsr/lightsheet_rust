@@ -71,6 +71,13 @@ TAURI_CONFIG='{
   }' cargo build
 ```
 
+==== Windows ====
+
+```
+cd src-tauri
+..\dev_build.bat
+```
+
 ### Compiles and minifies for production
 ```
 yarn tauri:build
