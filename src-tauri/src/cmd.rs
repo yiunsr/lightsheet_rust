@@ -13,4 +13,6 @@ pub enum Cmd {
   FileOpen { path: String, cb: String },
   FileOpenDialog { cb: String },
   SetTitle { title: String },
+  GetTableInfo { cb: String },
+  GetRows { from: u32, to: u32, cb: String },
 }

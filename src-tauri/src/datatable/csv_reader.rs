@@ -12,6 +12,7 @@ use log;
 use chardetng::EncodingDetector;
 use rusqlite::Connection;
 use rusqlite::NO_PARAMS;
+use rusqlite::params;
 
 use super::db_utils;
 
@@ -174,4 +175,19 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), 
 		col_len: col_count,
 		row_len: row_index,
 	})
+}
+
+pub fn get_rows(conn:&rusqlite::Connection, table_name:String, 
+	col_len: u32, from: u32, to: u32) -> String
+{
+	from = from + 1;
+	let blank = String::from("");
+	let sql = db_utils::select_query(&table_name, col_len, blank, blank, blank);
+	sql.push_str(" WHERE id >= ?1 limit 100;");
+	let mut stmt = conn.prepare(&sql).unwrap();
+	let mut vec_2d = vec![vec![String]];
+	let iter = stmt.query_map(params![from], |row| {
+        
+    })?;
+
 }

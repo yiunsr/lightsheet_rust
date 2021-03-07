@@ -284,7 +284,12 @@ export default {
               { text: "sheettest", click:() =>  {
                 router.push({ path: '/sheettest' })
                 }
-              }
+              },
+              { text: "history back", click:() =>  {
+                router.go(-1);
+                }
+              },
+
             ]
           },
           { is: "spacer" },

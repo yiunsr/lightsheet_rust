@@ -41,7 +41,8 @@ if (typeof jQuery === "undefined") {
       data.length = 0;
     }
 
-    function ensureData(from, to) {    
+    function ensureData(from, to) {   
+      debugger; // eslint-disable-line no-debugger 
       if (to == -1){
         to = from + 100;
       }
@@ -88,14 +89,14 @@ if (typeof jQuery === "undefined") {
       "onDataLoading": onDataLoading,
       "onDataLoaded": onDataLoaded
     };
-    }
+  }
   
-    // exports
-    $.extend(true, window, { 
-      Slick: { 
-        Data: { 
-          RemoteModel: RemoteModel 
-        }
+  // exports
+  $.extend(true, window, { 
+    Slick: { 
+      Data: { 
+        RemoteModel: RemoteModel 
       }
-    });
+    }
+  });
 }(window.jQuery));

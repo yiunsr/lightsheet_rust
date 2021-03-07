@@ -41,6 +41,12 @@ export default {
       cb: cb,
     });
   },
+  getTableInfo(cb){
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'getTableInfo',
+      cb: cb,
+    });
+  },
   initApp(){
     console.log("initApp");  
   },
@@ -59,7 +65,7 @@ export default {
     window.vm.$children[0].statusbar = status;
   },
 
-  get_rows(from, to){
+  getRows(from, to){
     window.__TAURI_INVOKE_HANDLER__({
       cmd: 'getRows',
       path: from,

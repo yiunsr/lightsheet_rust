@@ -8,6 +8,11 @@ import vuetify from './plugins/vuetify';
 import i18n from './i18n'
 import common from './common.js'
 import ui from './ui.js'
+import util_grid from './js/util_grid.js'
+
+window.common = common;
+window.ui = ui;
+window.util_grid = util_grid;
 
 Vue.config.productionTip = false
 
@@ -26,5 +31,4 @@ common.initApp();
 window.apiCallback = function(success, cb, result){
   common.apiCallback(success, cb, result);
 }
-window.common = common;
-window.ui = ui;
+

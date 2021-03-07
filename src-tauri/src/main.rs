@@ -2,7 +2,6 @@
   all(not(debug_assertions), target_os = "windows"),
   windows_subsystem = "windows"
 )]
-use std::env;
 use std::sync::Arc;
 use std::cell::RefCell;
 
@@ -15,14 +14,6 @@ use datatable::manager;
 mod cmd;
 
 fn main() {
-  // let key = "TAURI_CONFIG";
-  // env::set_var(key, "{
-  //   \"ctx\": {},
-  //   \"build\":{
-  //     \"devPath\": \"http://localhost:8080\"
-  //   }");
-  // let config_path = option_env!("TAURI_CONFIG");
-  // println!("{}", config_path.unwrap());
   tauri::AppBuilder::new()
     .invoke_handler(|_webview, arg| {
       use cmd::Cmd::*;
@@ -50,7 +41,9 @@ fn main() {
               else{
                 js.push_str("(false);");
               }
-              _webview.eval(&js);
+              _webview.dispatch(move |w| {
+                w.eval(&js);
+              });
             },
             Prompt { msg, cb, default_input} => {
               let result = match tfd::input_box("Lightsheet",&msg, &default_input){
@@ -58,7 +51,9 @@ fn main() {
                 None => Value::Null
               };
               let js = format!("{}(`{}`);", cb, result);
-              _webview.eval(&js);
+              _webview.dispatch(move |w| {
+                w.eval(&js);
+              });
             },
             FileOpen{path, cb} =>{
               println!("{}", path);
@@ -74,21 +69,40 @@ fn main() {
             let js2 = format!("common.hide_progress_dialog()");
             let mut aref1 = arc_rfc_wv1.borrow_mut();
             aref1.eval(&js2);
+            let js3 = format!("{}();", cb);
+            aref1.eval(&js3);
             },
             FileOpenDialog{cb} =>{
               let filepath = match tfd::open_file_dialog("Please choose a file...", "", None){
                 Some(s) => Value::String(s),
                 None => Value::Null
-            };
-            println!("{}", filepath);
-            let js = format!("{}({});", cb, filepath);
-             _webview.eval(&js);
+              };
+              println!("{}", filepath);
+              let js = format!("{}({});", cb, filepath);
+              _webview.dispatch(move |w| {
+                w.eval(&js);
+              });
             },
             SetTitle { title } => {
               _webview.dispatch(move |w| {
                 w.set_title(&title);
               });
-            }
+            },
+            GetTableInfo {cb} =>{
+              let row_len = manager::get_row_len();
+              let col_len = manager::get_col_len();
+              let js = format!("{}({}, {});", cb, row_len, col_len);
+              _webview.dispatch(move |w| {
+                w.eval(&js);
+              });
+            },
+            GetRows {from, to, cb} =>{
+              let rows_json = manager::get_rows(from, to);
+              let js = format!("{}({});", cb, rows_json);
+              _webview.dispatch(move |w| {
+                w.eval(&js);
+              });
+            },
           }
           Ok(())
         }
