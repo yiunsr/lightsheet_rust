@@ -1,3 +1,4 @@
+use std::io;
 use std::io::Seek;
 use std::io::SeekFrom;
 use std::io::Read;
@@ -13,6 +14,7 @@ use chardetng::EncodingDetector;
 use rusqlite::Connection;
 use rusqlite::NO_PARAMS;
 use rusqlite::params;
+use serde::{Deserialize, Serialize};
 
 use super::db_utils;
 
@@ -22,6 +24,12 @@ pub struct TableInfo {
 	pub table_name: String,
 	pub col_len: u32,
 	pub row_len: u32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DBDataJson{
+    row: u32,
+	values: Vec<String>,
 }
 
 macro_rules! skip_fail {
@@ -58,7 +66,7 @@ pub fn get_col_count(readedstr:&str, sep:u8) -> u32 {
 
 // fn read_csv(dbfile: String, csvfile: String, cb:Callback
 // 		) -> Result<Vec<Option<StringRecord>>, Box<dyn Error>> {
-pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), Box<dyn Error>>
+pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Box<dyn Error>>
 	where F: Fn(u32) -> ()
 {
 
@@ -130,15 +138,16 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), 
 			let record = opt_result_byterecord.unwrap().unwrap();
 
 			//i_stmt.raw_bind_int32(1 as usize, row_index as i32)?;
-			i_stmt.raw_bind_parameter(1 as usize, row_index as i32)?;
-			
+			//i_stmt.raw_bind_parameter(1 as usize, row_index as i32)?;
+			i_stmt.raw_bind_parameter(1 as usize, row_index as i32)?;			
 			let mut col_index = 2;
 			//let row_idex_str = row_index.to_string().clone();
 			//fields.push(&row_idex_str);
 			for field in record.iter() {
 				let s= enc.decode_without_bom_handling_and_without_replacement(field).unwrap();
 				//i_stmt.raw_bind_text_static(col_index, s.as_bytes())?;
-				i_stmt.raw_bind_parameter(col_index, s.as_bytes())?;
+				//i_stmt.raw_bind_parameter(col_index, s.as_bytes())?;
+				i_stmt.raw_bind_parameter(col_index, s)?;
 				col_index += 1;
 			}
 			//i_stmt.execute(params)
@@ -171,23 +180,37 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<(TableInfo), 
 
 	Ok(TableInfo {
 		conn: conn,
-		table_name: dbfile,
+		table_name: table_name,
 		col_len: col_count,
 		row_len: row_index,
 	})
 }
 
-pub fn get_rows(conn:&rusqlite::Connection, table_name:String, 
+pub fn get_rows(conn:&rusqlite::Connection, table_name:&String, 
 	col_len: u32, from: u32, to: u32) -> String
 {
-	from = from + 1;
-	let blank = String::from("");
-	let sql = db_utils::select_query(&table_name, col_len, blank, blank, blank);
+	let from_ = from + 1;
+	let blank1 = String::from("");
+	let blank2 = String::from("");
+	let blank3 = String::from("");
+	let mut sql = db_utils::select_query(table_name, col_len, blank1, blank2, blank3);
 	sql.push_str(" WHERE id >= ?1 limit 100;");
 	let mut stmt = conn.prepare(&sql).unwrap();
-	let mut vec_2d = vec![vec![String]];
-	let iter = stmt.query_map(params![from], |row| {
-        
-    })?;
-
+	let mut data:Vec<Vec<String>> = Vec::<Vec<String>>::with_capacity(100);
+	let mut rows = stmt.query(params![from_]).unwrap();
+	while let Some(row) = rows.next().unwrap() {
+		let mut vec_row:Vec<String> = Vec::<String>::with_capacity(col_len as usize);
+		let id_:i32 = row.get(0 as usize).unwrap();
+		print!("{}", id_);
+        for i in 1..col_len+1{
+			let value:String = row.get_unwrap(i as usize);
+			vec_row.push(value);
+		}
+		data.push(vec_row);
+    }
+	let mut seq = serializer.serialize_map(Some(self.x.len()))?;
+        for (k, v) in &self.x {
+            seq.serialize_entry(&k.to_string(), &v)?;
+        }
+	String::from("")
 }

@@ -11,6 +11,7 @@ import ui from './ui.js'
 import util_grid from './js/util_grid.js'
 
 window.common = common;
+window.temp = {};
 window.ui = ui;
 window.util_grid = util_grid;
 

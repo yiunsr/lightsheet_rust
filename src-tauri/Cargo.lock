@@ -642,6 +642,7 @@ dependencies = [
  "chardetng",
  "csv",
  "encoding_rs",
+ "lazy_static",
  "log",
  "rusqlite",
  "serde",

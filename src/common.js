@@ -64,12 +64,12 @@ export default {
   setStatusbar(status){
     window.vm.$children[0].statusbar = status;
   },
-
-  getRows(from, to){
+  getRows(from, to, cb){
     window.__TAURI_INVOKE_HANDLER__({
       cmd: 'getRows',
-      path: from,
-      cb: to,
+      from: from,
+      to: to,
+      cb: cb,
     });
   },
 }

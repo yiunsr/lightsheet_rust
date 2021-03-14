@@ -12,11 +12,11 @@ pub fn create_query(tablename:&String, col_count: u32) -> String {
     for i in 0..col_count-1 {
         col_names_query.push('`');
         col_names_query.push_str(&colname(i));
-        col_names_query.push_str(&String::from("` string NOT NULL DEFAULT '' , "));
+        col_names_query.push_str(&String::from("` TEXT NOT NULL DEFAULT '' , "));
     }
     col_names_query.push('`');
     col_names_query.push_str( &colname(col_count-1));
-    col_names_query.push_str( &"` string NOT NULL DEFAULT '' ");
+    col_names_query.push_str( &"` TEXT NOT NULL DEFAULT '' ");
     let mut query = String::from("CREATE TABLE `");
     query.push_str(&tablename);
     query.push_str("` (`id` INTEGER PRIMARY KEY, ");

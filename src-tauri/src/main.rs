@@ -13,6 +13,16 @@ use datatable::manager;
 
 mod cmd;
 
+static mut tableManagerWrap:Option<manager::TableManager> = None;
+
+fn getTableManager() -> &'static manager::TableManager{
+  let mut tableManager;
+  unsafe{
+    tableManager = tableManagerWrap.as_ref().unwrap();
+  }
+  tableManager
+}
+
 fn main() {
   tauri::AppBuilder::new()
     .invoke_handler(|_webview, arg| {
@@ -60,17 +70,21 @@ fn main() {
               let rfc_wv = RefCell::new(_webview);
               let arc_rfc_wv0 = Arc::new(rfc_wv);
               let arc_rfc_wv1 = arc_rfc_wv0.clone();
-              manager::open_file(path.to_string(), move |percent:u32| -> () {
+              let managerWrap = manager::TableManager::new(path.to_string(), move |percent:u32| -> () {
                 println!("{}", percent);
                 let js1 = format!("common.progress_dialog_percent({})", percent);
                 let mut aref0 = arc_rfc_wv0.borrow_mut();
                 aref0.eval(&js1); 
               });
-            let js2 = format!("common.hide_progress_dialog()");
-            let mut aref1 = arc_rfc_wv1.borrow_mut();
-            aref1.eval(&js2);
-            let js3 = format!("{}();", cb);
-            aref1.eval(&js3);
+              unsafe{
+                tableManagerWrap = managerWrap;
+              }
+              
+              let js2 = format!("common.hide_progress_dialog()");
+              let mut aref1 = arc_rfc_wv1.borrow_mut();
+              aref1.eval(&js2);
+              let js3 = format!("{}();", cb);
+              aref1.eval(&js3);
             },
             FileOpenDialog{cb} =>{
               let filepath = match tfd::open_file_dialog("Please choose a file...", "", None){
@@ -89,15 +103,17 @@ fn main() {
               });
             },
             GetTableInfo {cb} =>{
-              let row_len = manager::get_row_len();
-              let col_len = manager::get_col_len();
+              let tableManager = getTableManager();
+              let row_len = tableManager.get_row_len();
+              let col_len = tableManager.get_col_len();
               let js = format!("{}({}, {});", cb, row_len, col_len);
               _webview.dispatch(move |w| {
                 w.eval(&js);
               });
             },
             GetRows {from, to, cb} =>{
-              let rows_json = manager::get_rows(from, to);
+              let tableManager = getTableManager();
+              let rows_json = tableManager.get_rows(from, to);
               let js = format!("{}({});", cb, rows_json);
               _webview.dispatch(move |w| {
                 w.eval(&js);

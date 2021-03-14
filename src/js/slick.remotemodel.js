@@ -48,7 +48,11 @@ if (typeof jQuery === "undefined") {
       }
 
       var common = window.common;
-      common.get_rows(from, to)
+      window.temp.cbRowInfo = function(tableData){
+        for (var i = from; i <= to; i++)
+          data[i] = tableData[i];
+      }
+      common.getRows(from, to, "window.temp.cbRowInfo");
     }
     
     function reloadData(from, to) {
