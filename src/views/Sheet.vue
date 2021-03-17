@@ -41,7 +41,44 @@
           _this.colnames = _this.getColnames(col_len);
           console.log(row_len);
           console.log(col_len);
-          _this.creteGrid(_this);
+          debugger; // eslint-disable-line no-debugger
+          var util_grid = window.util_grid;
+          var _columns = util_grid.getColInfos(col_len);
+          let columns = util_grid.initColHeader(_columns);
+          var options = {
+            columnPicker: {
+                columnTitle: "Columns"
+            },
+            editable: true,
+            enableAddRow: true,
+            enableCellNavigation: true,
+            enableColumnReorder: true,
+            asyncEditorLoading: false,
+            autoEdit: false,
+            rowHeight: 20,
+          };
+          var Slick = window.Slick;
+          var remoteModel = new Slick.Data.RemoteModel();
+          remoteModel.data.length = row_len;
+          window.sheet.remoteModel = remoteModel;
+          
+          const $el = _this.$refs.mainGrid;
+          var grid = new Slick.Grid($el, remoteModel.data, columns, options);
+          this.grid = grid;
+          // grid.setSelectionModel(new Slick.CellSelectionModel());
+          grid.onViewportChanged.subscribe(function () {
+            // debugger; // eslint-disable-line no-debugger
+            debugger; // eslint-disable-line no-debugger
+            var vp = grid.getViewport();
+            window.sheet.remoteModel.ensureData(vp.top, vp.bottom);
+          });
+          grid.onSort.subscribe(function () {
+            var vp = grid.getViewport();
+            window.sheet.remoteModel.ensureData(vp.top, vp.bottom);
+          });
+          // load the first page
+          grid.onViewportChanged.notify();
+
         }
         var common = window.common;
         common.getTableInfo('sheet.tableInfoCB');
@@ -55,42 +92,6 @@
           colnames.push(this.getColname(i));
         }
         return colnames;
-      },
-      creteGrid: function(vm){
-        var util_grid = window.util_grid;
-        var _columns = util_grid.getColInfos(this.col_len);
-        let columns = util_grid.initColHeader(_columns);
-        var options = {
-          columnPicker: {
-              columnTitle: "Columns"
-          },
-          editable: true,
-          enableAddRow: true,
-          enableCellNavigation: true,
-          enableColumnReorder: true,
-          asyncEditorLoading: false,
-          autoEdit: false,
-          rowHeight: 20,
-        };
-        var Slick = window.Slick;
-        var remoteModel = new Slick.Data.RemoteModel();
-        this.remoteModel = remoteModel;
-        const $el = vm.$refs.mainGrid;
-        var grid = new Slick.Grid($el, remoteModel.data, columns, options);
-        // debugger; // eslint-disable-line no-debugger
-        this.grid = grid;
-        // grid.setSelectionModel(new Slick.CellSelectionModel());
-        var _this = vm;
-        grid.onViewportChanged.subscribe(function () {
-          var vp = grid.getViewport();
-          _this.remoteModel.ensureData(vp.top, vp.bottom);
-        });
-        grid.onSort.subscribe(function () {
-          var vp = grid.getViewport();
-          _this.remoteModel.ensureData(vp.top, vp.bottom);
-        });
-        // load the first page
-        grid.onViewportChanged.notify();
       },
     },
     created : function(){

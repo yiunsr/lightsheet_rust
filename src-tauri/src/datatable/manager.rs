@@ -48,9 +48,8 @@ impl TableManager {
         self.col_len
     }
     
-    pub fn get_rows(&self, from:u32, to:u32) ->String{
-        csv_reader::get_rows(&self.conn, &self.table_name, self.col_len, from, to);
-        String::from("")
+    pub fn get_rows(&self, from:u32, to:u32) -> String{
+        csv_reader::get_rows(&self.conn, &self.table_name, self.col_len, from, to)
     } 
     
 

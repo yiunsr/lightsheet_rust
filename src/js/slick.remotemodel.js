@@ -42,15 +42,23 @@ if (typeof jQuery === "undefined") {
     }
 
     function ensureData(from, to) {   
-      debugger; // eslint-disable-line no-debugger 
+      // debugger; // eslint-disable-line no-debugger
       if (to == -1){
         to = from + 100;
       }
 
       var common = window.common;
       window.temp.cbRowInfo = function(tableData){
-        for (var i = from; i <= to; i++)
-          data[i] = tableData[i];
+        debugger; // eslint-disable-line no-debugger 
+        for (var i = 1; i <= data.length-1; i++)
+          delete data[i];
+        for (var data_index in tableData) {
+          var item = { id: data["id"] };
+          data[from + data_index] = item;
+          data[from + data_index].index = from + data_index;
+          data[i] = tableData[i+1]["values"];
+        }
+          
       }
       common.getRows(from, to, "window.temp.cbRowInfo");
     }

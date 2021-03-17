@@ -1,7 +1,7 @@
-use std::io;
 use std::io::Seek;
 use std::io::SeekFrom;
 use std::io::Read;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
@@ -27,10 +27,11 @@ pub struct TableInfo {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct DBDataJson{
-    row: u32,
+pub struct RowInfo{
+    row_index: u32,
 	values: Vec<String>,
 }
+
 
 macro_rules! skip_fail {
     ($res:expr) => {
@@ -186,6 +187,7 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Bo
 	})
 }
 
+
 pub fn get_rows(conn:&rusqlite::Connection, table_name:&String, 
 	col_len: u32, from: u32, to: u32) -> String
 {
@@ -196,21 +198,21 @@ pub fn get_rows(conn:&rusqlite::Connection, table_name:&String,
 	let mut sql = db_utils::select_query(table_name, col_len, blank1, blank2, blank3);
 	sql.push_str(" WHERE id >= ?1 limit 100;");
 	let mut stmt = conn.prepare(&sql).unwrap();
-	let mut data:Vec<Vec<String>> = Vec::<Vec<String>>::with_capacity(100);
+	let mut row_dict:HashMap<u32, RowInfo> = HashMap::new();
+	// let mut row_slice:Vec<RowInfo> = Vec::<RowInfo>::with_capacity(100);
 	let mut rows = stmt.query(params![from_]).unwrap();
 	while let Some(row) = rows.next().unwrap() {
 		let mut vec_row:Vec<String> = Vec::<String>::with_capacity(col_len as usize);
-		let id_:i32 = row.get(0 as usize).unwrap();
+		let id_:u32 = row.get(0 as usize).unwrap();
 		print!("{}", id_);
         for i in 1..col_len+1{
 			let value:String = row.get_unwrap(i as usize);
 			vec_row.push(value);
 		}
-		data.push(vec_row);
+		let rowinfo = RowInfo{row_index: id_, values: vec_row};
+		row_dict.insert(id_, rowinfo);
     }
-	let mut seq = serializer.serialize_map(Some(self.x.len()))?;
-        for (k, v) in &self.x {
-            seq.serialize_entry(&k.to_string(), &v)?;
-        }
-	String::from("")
+
+	let json_str = serde_json::to_string(&row_dict).unwrap();
+	json_str
 }

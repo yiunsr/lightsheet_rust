@@ -103,17 +103,17 @@ fn main() {
               });
             },
             GetTableInfo {cb} =>{
-              let tableManager = getTableManager();
-              let row_len = tableManager.get_row_len();
-              let col_len = tableManager.get_col_len();
+              let table_manager = getTableManager();
+              let row_len = table_manager.get_row_len();
+              let col_len = table_manager.get_col_len();
               let js = format!("{}({}, {});", cb, row_len, col_len);
               _webview.dispatch(move |w| {
                 w.eval(&js);
               });
             },
             GetRows {from, to, cb} =>{
-              let tableManager = getTableManager();
-              let rows_json = tableManager.get_rows(from, to);
+              let table_manager = getTableManager();
+              let rows_json = table_manager.get_rows(from, to);
               let js = format!("{}({});", cb, rows_json);
               _webview.dispatch(move |w| {
                 w.eval(&js);
