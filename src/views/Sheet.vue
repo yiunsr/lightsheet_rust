@@ -2,6 +2,9 @@
 .slick-cell.grid-row-hader{
   background: #f0f0f0;
 }
+.slick-row .slick-cell.active{
+  padding-top: 2px;
+}
 </style>
 
 <template>
@@ -65,7 +68,7 @@
             enableColumnReorder: true,
             asyncEditorLoading: false,
             autoEdit: false,
-            rowHeight: 20,
+            rowHeight: 24,
           };
           var Slick = window.Slick;
           var remoteModel = new Slick.Data.RemoteModel();
@@ -76,15 +79,14 @@
           var grid = new Slick.Grid($el, remoteModel.data, columns, options);
           _this.grid = grid;
           // grid.setSelectionModel(new Slick.CellSelectionModel());
-          grid.onViewportChanged.subscribe(function () {
+          var onViewportChanged = function(){
             // debugger; // eslint-disable-line no-debugger
             var vp = grid.getViewport();
             window.sheet.remoteModel.ensureData(vp.top, vp.bottom);
-          });
-          grid.onSort.subscribe(function () {
-            var vp = grid.getViewport();
-            window.sheet.remoteModel.ensureData(vp.top, vp.bottom);
-          });
+          }
+          var onScroll = window._.debounce(onViewportChanged, 250);
+          grid.onViewportChanged.subscribe(onScroll);
+          grid.onSort.subscribe(onViewportChanged);
           remoteModel.onDataLoaded.subscribe(function (e, args) {
             for (var i = args.from; i <= args.to; i++) {
               grid.invalidateRow(i);

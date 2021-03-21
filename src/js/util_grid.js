@@ -38,7 +38,7 @@ export default{
       ];
     for(var index = 0; index < col_count; index++){
       var colname = this.getColName(index+1);
-      var item = {id: colname, name: colname, field: colname, editor: Slick.Editors.LongText};
+      var item = {id: colname, name: colname, field: colname, editor: Slick.Editors.Text};
       columns.push(item);
     }
     return columns;

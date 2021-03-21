@@ -9,11 +9,13 @@ import i18n from './i18n'
 import common from './common.js'
 import ui from './ui.js'
 import util_grid from './js/util_grid.js'
+import _ from 'lodash'
 
 window.common = common;
 window.temp = {};
 window.ui = ui;
 window.util_grid = util_grid;
+window._ = _;
 
 Vue.config.productionTip = false
 
