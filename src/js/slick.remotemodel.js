@@ -2,6 +2,7 @@ if (typeof jQuery === "undefined") {
   throw new Error("SlickGrid requires jquery module to be loaded");
 }
 
+
 (function ($) {
   /***
   * A sample AJAX data store implementation.
@@ -43,22 +44,37 @@ if (typeof jQuery === "undefined") {
 
     function ensureData(from, to) {   
       // debugger; // eslint-disable-line no-debugger
+      const marginTop = 10;
+      const marginBottom = 50;
       if (to == -1){
         to = from + 100;
       }
+      from = Math.max(0, from - marginTop);
+      to = to + marginBottom;
 
       var common = window.common;
       window.temp.cbRowInfo = function(tableData){
-        debugger; // eslint-disable-line no-debugger 
-        for (var i = 1; i <= data.length-1; i++)
+        for (var i = 0; i <= Object.keys(data).length; i++)
           delete data[i];
-        for (var data_index in tableData) {
-          var item = { id: data["id"] };
+        var rows = tableData.values;
+        for (var row_index in rows) {
+          var data_index = parseInt(row_index);
+          var row_dict = rows[data_index];
+          var item = { id: row_dict["id"] };
+
+          for(var colname in row_dict){
+            if(colname == "id") continue;
+            var colindex = parseInt(colname.slice(2,20))
+            var base26 = common.toBase26(colindex);
+            item[base26] = row_dict[colname];
+        }
           data[from + data_index] = item;
           data[from + data_index].index = from + data_index;
-          data[i] = tableData[i+1]["values"];
         }
-          
+        setTimeout(function() {
+          // debugger; // eslint-disable-line no-debugger 
+          onDataLoaded.notify({from: from, to: to});
+        }, 10);
       }
       common.getRows(from, to, "window.temp.cbRowInfo");
     }

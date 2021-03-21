@@ -72,6 +72,29 @@ export default {
       cb: cb,
     });
   },
+  toBase26(value){
+    value = Math.abs(value);
+    var converted = ""
+         ,iteration = false
+         ,remainder;
+    // Repeatedly divide the numerb by 26 and convert the
+    // remainder into the appropriate letter.
+    do {
+        remainder = value % 26;
+        // Compensate for the last letter of the series being corrected on 2 or more iterations.
+        if (iteration && value < 25) {
+            remainder--;
+        }
+  
+        converted = String.fromCharCode((remainder + 'A'.charCodeAt(0))) + converted;
+        value = Math.floor((value - remainder) / 26);
+  
+        iteration = true;
+    } while (value > 0);
+  
+    return converted;
+  },
+  
 }
 
 if(isTauri){

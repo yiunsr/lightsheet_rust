@@ -15,6 +15,8 @@ use rusqlite::Connection;
 use rusqlite::NO_PARAMS;
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
+use serde_json::value::Value;
+use serde_json::Number;
 
 use super::db_utils;
 
@@ -26,11 +28,10 @@ pub struct TableInfo {
 	pub row_len: u32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct RowInfo{
-    row_index: u32,
-	values: Vec<String>,
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct RowInfo{
+// 	values: HashMap<String, Value>,
+// }
 
 
 macro_rules! skip_fail {
@@ -198,21 +199,23 @@ pub fn get_rows(conn:&rusqlite::Connection, table_name:&String,
 	let mut sql = db_utils::select_query(table_name, col_len, blank1, blank2, blank3);
 	sql.push_str(" WHERE id >= ?1 limit 100;");
 	let mut stmt = conn.prepare(&sql).unwrap();
-	let mut row_dict:HashMap<u32, RowInfo> = HashMap::new();
-	// let mut row_slice:Vec<RowInfo> = Vec::<RowInfo>::with_capacity(100);
+	let mut data_dict:HashMap<String, Value> = HashMap::new();
+	let mut row_slice:Vec<Value> = Vec::<Value>::with_capacity(100);
 	let mut rows = stmt.query(params![from_]).unwrap();
 	while let Some(row) = rows.next().unwrap() {
-		let mut vec_row:Vec<String> = Vec::<String>::with_capacity(col_len as usize);
 		let id_:u32 = row.get(0 as usize).unwrap();
+		let mut item:HashMap<String, Value> = HashMap::new();
+		item.entry(String::from("id")).or_insert(Value::Number(Number::from(id_)));
 		print!("{}", id_);
         for i in 1..col_len+1{
-			let value:String = row.get_unwrap(i as usize);
-			vec_row.push(value);
+			let value = Value::String(row.get_unwrap(i as usize));
+			let colname = &db_utils::colname((i-1) as u32).to_owned();
+			item.entry(colname.to_string()).or_insert(value);
 		}
-		let rowinfo = RowInfo{row_index: id_, values: vec_row};
-		row_dict.insert(id_, rowinfo);
+		let rowinfo = serde_json::to_value(item).unwrap();
+		row_slice.push(rowinfo);
     }
-
-	let json_str = serde_json::to_string(&row_dict).unwrap();
+	data_dict.entry(String::from("values")).or_insert(Value::Array(row_slice));
+	let json_str = serde_json::to_string(&data_dict).unwrap();
 	json_str
 }
