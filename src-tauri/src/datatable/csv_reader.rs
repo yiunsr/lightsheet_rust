@@ -17,6 +17,7 @@ use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use serde_json::value::Value;
 use serde_json::Number;
+use unicode_bom::Bom;
 
 use super::db_utils;
 
@@ -85,6 +86,12 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Bo
 
 	file.read(&mut buffer)?;
 	file.seek(SeekFrom::Start(0))?;
+	
+	// BOM Check
+	let bom: Bom = Bom::from(&buffer[0..4]);
+	if Bom::Utf8 == bom {
+		println!("Utf8");
+	}
 
 	let mut det = EncodingDetector::new();
 	det.feed(&buffer, true);
@@ -94,9 +101,6 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Bo
 	let str_buffer = String::from_utf8_lossy(&buffer);
 	let sep = get_col_sep(&str_buffer);
 	let col_count = get_col_count(&str_buffer, sep);
-
-	let mut decoder = enc.new_decoder();
-
 
 	let mut rdr = csv::ReaderBuilder::new().delimiter(sep)
 		.from_reader(file);
