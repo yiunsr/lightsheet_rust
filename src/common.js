@@ -1,6 +1,9 @@
 const isTauri = !!window.__TAURI_INVOKE_HANDLER__;
 
 export default {
+  log(msg){
+    console.log(msg);
+  },
   setTitle(title){
     window.__TAURI_INVOKE_HANDLER__({
       cmd: 'setTitle',

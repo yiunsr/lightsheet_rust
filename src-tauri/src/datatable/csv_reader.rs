@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::value::Value;
 use serde_json::Number;
 use unicode_bom::Bom;
+use lazy_static;
 
 use super::db_utils;
 
@@ -67,8 +68,7 @@ pub fn get_col_count(readedstr:&str, sep:u8) -> u32 {
 	sep_count as u32 + 1
 }
 
-// fn read_csv(dbfile: String, csvfile: String, cb:Callback
-// 		) -> Result<Vec<Option<StringRecord>>, Box<dyn Error>> {
+
 pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Box<dyn Error>>
 	where F: Fn(u32) -> ()
 {
@@ -120,7 +120,7 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Bo
 	conn.pragma_update(None, "temp_store", &"MEMORY".to_string());
 	// // https://blog.devart.com/increasing-sqlite-performance.html
 
-	let table_name = "datatable".to_string();
+	let table_name = "datatable_01".to_string();
 	// let rec = records[0].unwrap();
 	let c_sql = db_utils::create_query(&table_name, col_count);
 	conn.execute(&c_sql, NO_PARAMS)?;

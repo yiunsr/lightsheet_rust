@@ -4,6 +4,7 @@
 )]
 use std::sync::Arc;
 use std::cell::RefCell;
+use std::time::Instant;
 
 use serde_json::Value;
 use tinyfiledialogs as tfd;
@@ -30,7 +31,7 @@ fn main() {
       println!("{}", arg);
       match serde_json::from_str(arg) {
         Err(e) => {
-          Err(e.to_string())
+          Err(e.to_string())  
         }
         Ok(command) => {
           match command {
@@ -66,25 +67,34 @@ fn main() {
               });
             },
             FileOpen{path, cb} =>{
+              let now = Instant::now();
               println!("{}", path);
               let rfc_wv = RefCell::new(_webview);
               let arc_rfc_wv0 = Arc::new(rfc_wv);
               let arc_rfc_wv1 = arc_rfc_wv0.clone();
-              let managerWrap = manager::TableManager::new(path.to_string(), move |percent:u32| -> () {
+              let manager = manager::TableManager::new(path.to_string());
+              manager.open(path.to_string(), move |percent:u32| -> () {
                 println!("{}", percent);
                 let js1 = format!("common.progress_dialog_percent({})", percent);
                 let mut aref0 = arc_rfc_wv0.borrow_mut();
                 aref0.eval(&js1); 
               });
+              let rowlen = manager.get_row_len();
               unsafe{
-                tableManagerWrap = managerWrap;
+                tableManagerWrap = Some(manager);
               }
+              
               
               let js2 = format!("common.hide_progress_dialog()");
               let mut aref1 = arc_rfc_wv1.borrow_mut();
               aref1.eval(&js2);
               let js3 = format!("{}();", cb);
               aref1.eval(&js3);
+              let spendtime = now.elapsed().as_secs_f64();
+              let js4 = format!("common.log('==== spendtime : {} ====');", spendtime);
+              aref1.eval(&js4);
+              let js5 = format!("common.log('1s per insert : {}');", (rowlen as f64 / spendtime));
+              aref1.eval(&js5);
             },
             FileOpenDialog{cb} =>{
               let filepath = match tfd::open_file_dialog("Please choose a file...", "", None){

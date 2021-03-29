@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Window MSVC Debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "./src-tauri/target/debug/lightsheet-rust.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+          },
+        {
             "type": "lldb",
             "request": "launch",
             "name": "Debug Window",
