@@ -16,6 +16,14 @@ window.temp = {};
 window.ui = ui;
 window.util_grid = util_grid;
 window._ = _;
+let window_id;
+if(localStorage.window_id)
+  window_id = parseInt(localStorage.window_id);
+else{
+  window_id = 1;
+  localStorage.window_id = 1;
+}
+window.window_id = window_id;
 
 Vue.config.productionTip = false
 

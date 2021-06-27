@@ -70,20 +70,20 @@ fn main() {
                 w.eval(&js);
               });
             },
-            FileOpen{path, cb} =>{
+            FileOpen{window_id, path, cb} =>{
               let now = Instant::now();
               println!("{}", path);
               let rfc_wv = RefCell::new(_webview);
               let arc_rfc_wv0 = Arc::new(rfc_wv);
               let arc_rfc_wv1 = arc_rfc_wv0.clone();
               let table_manager = get_table_manager();
-              table_manager.open(path.to_string(), move |percent:u32| -> () {
+              table_manager.open(1u32, path.to_string(), move |percent:u32| -> () {
                 println!("{}", percent);
                 let js1 = format!("common.progress_dialog_percent({})", percent);
                 let mut aref0 = arc_rfc_wv0.borrow_mut();
                 aref0.eval(&js1); 
               });
-              let rowlen = table_manager.get_row_len();
+              let rowlen = table_manager.get_row_len(window_id);
               
               let js2 = format!("common.hide_progress_dialog()");
               let mut aref1 = arc_rfc_wv1.borrow_mut();
@@ -112,18 +112,18 @@ fn main() {
                 w.set_title(&title);
               });
             },
-            GetTableInfo {cb} =>{
+            GetTableInfo {window_id, cb} =>{
               let table_manager = get_table_manager();
-              let row_len = table_manager.get_row_len();
-              let col_len = table_manager.get_col_len();
+              let row_len = table_manager.get_row_len(window_id);
+              let col_len = table_manager.get_col_len(window_id);
               let js = format!("{}({}, {});", cb, row_len, col_len);
               _webview.dispatch(move |w| {
                 w.eval(&js);
               });
             },
-            GetRows {from, to, cb} =>{
+            GetRows {window_id, from, to, cb} =>{
               let table_manager = get_table_manager();
-              let rows_json = table_manager.get_rows(from, to);
+              let rows_json = table_manager.get_rows(window_id, from, to);
               let js = format!("{}({});", cb, rows_json);
               _webview.dispatch(move |w| {
                 w.eval(&js);

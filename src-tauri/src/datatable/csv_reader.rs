@@ -56,14 +56,12 @@ pub fn get_col_count(readedstr:&str, sep:u8) -> u32 {
 }
 
 
-pub fn read_csv<'conn, F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Box<dyn Error>>
-	where F: Fn(u32) -> ()
+pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: String,cb:F) 
+		->Result<TableInfo, Box<dyn Error>>
+		where F: Fn(u32) -> ()
 {
 
     // Read CSV File
-	// 딱히 삭제가 안되더라도 무시한다. 
-	let _ = fs::remove_file(dbfile.clone());
-		
 	let file= &mut File::open(csvfile).unwrap();
 	//let file_pos = file.seek(SeekFrom::Current(0)).unwrap();
 	let total_file_byte = file.metadata().unwrap().len();
@@ -96,18 +94,7 @@ pub fn read_csv<'conn, F>(dbfile: String, csvfile: String, cb:F) ->Result<TableI
 
 	let mut old_percent = 0u32;
 	let ucol_count:usize = col_count as usize;
-
-	// 메모리 데이터베이스
-	// let conn = Connection::open_in_memory()?;
-	let mut conn = Connection::open(dbfile.clone())?;
-	let _ = conn.pragma_update(None, "synchronous", &"OFF".to_string());
-	let _ = conn.pragma_update(None, "journal_mode", &"MEMORY".to_string());
-	let _ = conn.pragma_update(None, "cache_size", &"10000".to_string());
-	let _ = conn.pragma_update(None, "locking_mode", &"EXCLUSIVE".to_string());
-	let _ = conn.pragma_update(None, "temp_store", &"MEMORY".to_string());
-	// // https://blog.devart.com/increasing-sqlite-performance.html
-
-	let table_name = "datatable_01".to_string();
+	
 	// let rec = records[0].unwrap();
 	let c_sql = db_utils::create_query(&table_name, col_count);
 	conn.execute(&c_sql, NO_PARAMS)?;
@@ -171,7 +158,6 @@ pub fn read_csv<'conn, F>(dbfile: String, csvfile: String, cb:F) ->Result<TableI
 
 	println!("total row_index : {}", row_index);
 	let table_info = TableInfo {
-		conn: Arc::new(conn),
 		table_name: table_name,
 		col_len: col_count,
 		row_len: row_index,

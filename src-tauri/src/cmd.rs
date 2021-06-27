@@ -10,9 +10,9 @@ pub enum Cmd {
   Alert { msg: String },
   Confirm { msg: String, cb: String },
   Prompt { msg: String, cb: String, default_input: String },
-  FileOpen { path: String, cb: String },
+  FileOpen { window_id: u32, path: String, cb: String },
   FileOpenDialog { cb: String },
   SetTitle { title: String },
-  GetTableInfo { cb: String },
-  GetRows { from: u32, to: u32, cb: String },
+  GetTableInfo { window_id: u32, cb: String},
+  GetRows { window_id: u32, from: u32, to: u32, cb: String },
 }

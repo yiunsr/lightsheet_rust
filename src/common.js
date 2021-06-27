@@ -34,6 +34,7 @@ export default {
   fileOpen(path, cb){
     window.__TAURI_INVOKE_HANDLER__({
       cmd: 'fileOpen',
+      window_id: window.window_id,
       path: path,
       cb: cb,
     });
@@ -46,6 +47,7 @@ export default {
   },
   getTableInfo(cb){
     window.__TAURI_INVOKE_HANDLER__({
+      window_id: window.window_id,
       cmd: 'getTableInfo',
       cb: cb,
     });
@@ -70,6 +72,7 @@ export default {
   getRows(from, to, cb){
     window.__TAURI_INVOKE_HANDLER__({
       cmd: 'getRows',
+      window_id: window.window_id,
       from: from,
       to: to,
       cb: cb,
