@@ -20,6 +20,7 @@ chardetng = "0.1.10"
 encoding_rs = "0.8.26"
 tinyfiledialogs = "3.3.10"
 lazy_static = "1.4.0"
+dashmap = "4.0.2"
 
   [dependencies.rusqlite]
   version = "0.24.2"

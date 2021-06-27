@@ -1,11 +1,16 @@
+use std::rc::Rc;
+use std::cell::RefCell;
 use std::sync::Arc;
 use std::sync::{Mutex, Once};
 use std::time::Instant;
 use std::collections::HashMap;
 use lazy_static::lazy_static;
+use rusqlite::Connection;
+// use dashmap::DashMap;
 
 use crate::datatable::csv_reader;
-use rusqlite::Connection;
+use crate::datatable::table_info::TableInfo;
+
 
 pub struct TableManager{
     table_name: String,
@@ -14,29 +19,16 @@ pub struct TableManager{
     table_id: u32,
 }
 
-// https://stackoverflow.com/a/38905082
-lazy_static! {
-    static ref DbConnectionPool: HashMap<u32, &'static Connection> = {
-        let mut m = HashMap::new();
-        m
-    };
+static mut CONN:Option<Arc<Connection>> = None;
+
+pub fn get_conn<'a>(table_id:u32)-> &'a Connection {
+    let conn:&'a Connection;
+    unsafe{
+        conn = CONN.as_ref().unwrap();
+    }
+    conn
 }
 
-
-// fn get_connection_pool_mg() -> &'static HashMap<u32, Connection> {
-//     lazy_static! {
-//         static ref DbConnectionPool: HashMap<u32, Connection> = HashMap::new();
-//     }
-//     &DbConnectionPool
-// }
-
-fn get_connection(table_id:u32)-> &'static Connection {
-    DbConnectionPool.get(&table_id).unwrap()
-}
-
-fn set_connection(table_id:u32, conn:&'static Connection){
-    DbConnectionPool.insert(table_id, conn);
-}
 
 impl TableManager {
     // Another static method, taking two arguments:
@@ -48,7 +40,7 @@ impl TableManager {
             table_id: 1}
     }
 
-    pub fn open<F>(&self, filepath:String, cb:F) -> Option<TableManager>  
+    pub fn open<F>(&mut self, filepath:String, cb:F) -> Option<TableManager>  
         where F: Fn(u32) -> ()
     {
         // let mut temp_path = env::temp_dir();
@@ -65,7 +57,15 @@ impl TableManager {
         let spendtime = now.elapsed().as_secs_f64();
         println!("spendtime : {}", spendtime);
         println!("1s per insert : {}", (table_info.row_len as f64) / spendtime);
-        set_connection(1u32, &table_info.conn);
+        unsafe{
+            CONN = Some(table_info.conn);
+        }
+        self.table_name = table_info.table_name.clone();
+        self.row_len = table_info.row_len;
+        self.col_len = table_info.col_len;
+        self.table_id = 1;
+
+        
         Some(TableManager{
             table_name: table_info.table_name,
             row_len: table_info.row_len, col_len:table_info.col_len,
@@ -90,7 +90,7 @@ impl TableManager {
     }
     
     pub fn get_rows(&self, from:u32, to:u32) -> String{
-        let conn = get_connection(1u32);
+        let conn = get_conn(1u32);
         csv_reader::get_rows(&conn, &self.table_name, self.col_len, from, to)
     } 
     

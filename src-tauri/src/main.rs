@@ -72,7 +72,7 @@ fn main() {
               let rfc_wv = RefCell::new(_webview);
               let arc_rfc_wv0 = Arc::new(rfc_wv);
               let arc_rfc_wv1 = arc_rfc_wv0.clone();
-              let manager = manager::TableManager::new(path.to_string());
+              let mut manager = manager::TableManager::new(path.to_string());
               manager.open(path.to_string(), move |percent:u32| -> () {
                 println!("{}", percent);
                 let js1 = format!("common.progress_dialog_percent({})", percent);

@@ -8,6 +8,9 @@ use std::fs::File;
 use std::str;
 use std::boxed::Box;
 use std::convert::TryFrom;
+use std::rc::Rc;
+use std::cell::RefCell;
+use std::sync::Arc;
 use csv::Reader;
 use log;
 use chardetng::EncodingDetector;
@@ -18,17 +21,18 @@ use serde::{Deserialize, Serialize};
 use serde_json::value::Value;
 use serde_json::Number;
 use unicode_bom::Bom;
-use lazy_static;
+
 
 use super::db_utils;
+use super::table_info::TableInfo;
 
-// pub type Callback = fn(u32);
-pub struct TableInfo {
-    pub conn: Connection,
-	pub table_name: String,
-	pub col_len: u32,
-	pub row_len: u32,
-}
+// // pub type Callback = fn(u32);
+// pub struct TableInfo {
+//     pub conn: Connection,
+// 	pub table_name: String,
+// 	pub col_len: u32,
+// 	pub row_len: u32,
+// }
 
 // #[derive(Serialize, Deserialize, Debug)]
 // pub struct RowInfo{
@@ -69,7 +73,7 @@ pub fn get_col_count(readedstr:&str, sep:u8) -> u32 {
 }
 
 
-pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Box<dyn Error>>
+pub fn read_csv<'conn, F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Box<dyn Error>>
 	where F: Fn(u32) -> ()
 {
 
@@ -183,13 +187,14 @@ pub fn read_csv<F>(dbfile: String, csvfile: String, cb:F) ->Result<TableInfo, Bo
 	//conn.execute("Commit;", NO_PARAMS)?;
 
 	println!("total row_index : {}", row_index);
-
-	Ok(TableInfo {
-		conn: conn,
+	let table_info = TableInfo {
+		conn: Arc::new(conn),
 		table_name: table_name,
 		col_len: col_count,
 		row_len: row_index,
-	})
+	};
+	
+	Ok(table_info)
 }
 
 
