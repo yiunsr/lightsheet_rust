@@ -14,17 +14,21 @@ use datatable::manager;
 
 mod cmd;
 
-static mut tableManagerWrap:Option<manager::TableManager> = None;
+static mut TABLE_MANAGER_WRAP:Option<manager::TableManager> = None;
 
-fn getTableManager() -> &'static manager::TableManager{
-  let mut tableManager;
+fn get_table_manager<'a>() -> &'a mut manager::TableManager{
+  let table_manager:& mut manager::TableManager;
   unsafe{
-    tableManager = tableManagerWrap.as_ref().unwrap();
+    table_manager = TABLE_MANAGER_WRAP.as_mut().unwrap();
   }
-  tableManager
+  table_manager
 }
 
 fn main() {
+  let manager = manager::TableManager::new();
+  unsafe{
+    TABLE_MANAGER_WRAP = Some(manager);
+  }
   tauri::AppBuilder::new()
     .invoke_handler(|_webview, arg| {
       use cmd::Cmd::*;
@@ -72,18 +76,14 @@ fn main() {
               let rfc_wv = RefCell::new(_webview);
               let arc_rfc_wv0 = Arc::new(rfc_wv);
               let arc_rfc_wv1 = arc_rfc_wv0.clone();
-              let mut manager = manager::TableManager::new(path.to_string());
-              manager.open(path.to_string(), move |percent:u32| -> () {
+              let table_manager = get_table_manager();
+              table_manager.open(path.to_string(), move |percent:u32| -> () {
                 println!("{}", percent);
                 let js1 = format!("common.progress_dialog_percent({})", percent);
                 let mut aref0 = arc_rfc_wv0.borrow_mut();
                 aref0.eval(&js1); 
               });
-              let rowlen = manager.get_row_len();
-              unsafe{
-                tableManagerWrap = Some(manager);
-              }
-              
+              let rowlen = table_manager.get_row_len();
               
               let js2 = format!("common.hide_progress_dialog()");
               let mut aref1 = arc_rfc_wv1.borrow_mut();
@@ -113,7 +113,7 @@ fn main() {
               });
             },
             GetTableInfo {cb} =>{
-              let table_manager = getTableManager();
+              let table_manager = get_table_manager();
               let row_len = table_manager.get_row_len();
               let col_len = table_manager.get_col_len();
               let js = format!("{}({}, {});", cb, row_len, col_len);
@@ -122,7 +122,7 @@ fn main() {
               });
             },
             GetRows {from, to, cb} =>{
-              let table_manager = getTableManager();
+              let table_manager = get_table_manager();
               let rows_json = table_manager.get_rows(from, to);
               let js = format!("{}({});", cb, rows_json);
               _webview.dispatch(move |w| {

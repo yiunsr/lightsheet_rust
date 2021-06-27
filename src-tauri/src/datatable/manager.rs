@@ -21,7 +21,7 @@ pub struct TableManager{
 
 static mut CONN:Option<Arc<Connection>> = None;
 
-pub fn get_conn<'a>(table_id:u32)-> &'a Connection {
+pub fn get_conn<'a>()-> &'a Connection {
     let conn:&'a Connection;
     unsafe{
         conn = CONN.as_ref().unwrap();
@@ -32,7 +32,7 @@ pub fn get_conn<'a>(table_id:u32)-> &'a Connection {
 
 impl TableManager {
     // Another static method, taking two arguments:
-    pub fn new(filepath:String) -> TableManager
+    pub fn new() -> TableManager
     {
         TableManager{
             table_name: "".to_string(),
@@ -46,7 +46,7 @@ impl TableManager {
         // let mut temp_path = env::temp_dir();
         // temp_path.push("tmp.db");
         // let db_path = temp_path.into_os_string().into_string().unwrap();
-        let db_path = TableManager::get_temp_file_lath();
+        let db_path = TableManager::get_temp_file_fath();
         let now = Instant::now();
         let table_info = csv_reader::read_csv(db_path, filepath, cb);
         if let Err(e) = table_info{
@@ -73,11 +73,11 @@ impl TableManager {
         })
     }
 
-    pub fn get_temp_file_lath() -> String{
+    pub fn get_temp_file_fath() -> String{
         "./tmp.db".to_string()
     }
 
-    pub fn get_table_name(&self) -> String{
+    pub fn get_table_name(&self, table_id:u32) -> String{
         self.table_name.clone()
     }
 
@@ -90,7 +90,7 @@ impl TableManager {
     }
     
     pub fn get_rows(&self, from:u32, to:u32) -> String{
-        let conn = get_conn(1u32);
+        let conn = get_conn();
         csv_reader::get_rows(&conn, &self.table_name, self.col_len, from, to)
     } 
     

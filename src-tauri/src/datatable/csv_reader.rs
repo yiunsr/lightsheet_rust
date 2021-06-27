@@ -8,16 +8,12 @@ use std::fs::File;
 use std::str;
 use std::boxed::Box;
 use std::convert::TryFrom;
-use std::rc::Rc;
-use std::cell::RefCell;
 use std::sync::Arc;
-use csv::Reader;
 use log;
 use chardetng::EncodingDetector;
 use rusqlite::Connection;
 use rusqlite::NO_PARAMS;
 use rusqlite::params;
-use serde::{Deserialize, Serialize};
 use serde_json::value::Value;
 use serde_json::Number;
 use unicode_bom::Bom;
@@ -38,19 +34,6 @@ use super::table_info::TableInfo;
 // pub struct RowInfo{
 // 	values: HashMap<String, Value>,
 // }
-
-
-macro_rules! skip_fail {
-    ($res:expr) => {
-        match $res {
-            Ok(val) => val,
-            Err(e) => {
-                println!("An error: {}; skipped.", e);
-                continue;
-            }
-        }
-    };
-}
 
 pub fn get_col_sep(readedstr:&str) -> u8 {
     let comma = readedstr.matches(',').count();
@@ -79,7 +62,7 @@ pub fn read_csv<'conn, F>(dbfile: String, csvfile: String, cb:F) ->Result<TableI
 
     // Read CSV File
 	// 딱히 삭제가 안되더라도 무시한다. 
-	fs::remove_file(dbfile.clone());
+	let _ = fs::remove_file(dbfile.clone());
 		
 	let file= &mut File::open(csvfile).unwrap();
 	//let file_pos = file.seek(SeekFrom::Current(0)).unwrap();
@@ -106,7 +89,7 @@ pub fn read_csv<'conn, F>(dbfile: String, csvfile: String, cb:F) ->Result<TableI
 	let sep = get_col_sep(&str_buffer);
 	let col_count = get_col_count(&str_buffer, sep);
 
-	let mut rdr = csv::ReaderBuilder::new().delimiter(sep)
+	let rdr = csv::ReaderBuilder::new().delimiter(sep)
 		.from_reader(file);
 	//.delimiter(sep);
 	//let iter = rdr.byte_records();
@@ -117,11 +100,11 @@ pub fn read_csv<'conn, F>(dbfile: String, csvfile: String, cb:F) ->Result<TableI
 	// 메모리 데이터베이스
 	// let conn = Connection::open_in_memory()?;
 	let mut conn = Connection::open(dbfile.clone())?;
-	conn.pragma_update(None, "synchronous", &"OFF".to_string());
-	conn.pragma_update(None, "journal_mode", &"MEMORY".to_string());
-	conn.pragma_update(None, "cache_size", &"10000".to_string());
-	conn.pragma_update(None, "locking_mode", &"EXCLUSIVE".to_string());
-	conn.pragma_update(None, "temp_store", &"MEMORY".to_string());
+	let _ = conn.pragma_update(None, "synchronous", &"OFF".to_string());
+	let _ = conn.pragma_update(None, "journal_mode", &"MEMORY".to_string());
+	let _ = conn.pragma_update(None, "cache_size", &"10000".to_string());
+	let _ = conn.pragma_update(None, "locking_mode", &"EXCLUSIVE".to_string());
+	let _ = conn.pragma_update(None, "temp_store", &"MEMORY".to_string());
 	// // https://blog.devart.com/increasing-sqlite-performance.html
 
 	let table_name = "datatable_01".to_string();
@@ -163,9 +146,9 @@ pub fn read_csv<'conn, F>(dbfile: String, csvfile: String, cb:F) ->Result<TableI
 			//i_stmt.execute(params)
 			row_index = row_index + 1;
 			//i_stmt.execute_with_bound_parameters();
-			i_stmt.raw_execute();
+			let _= i_stmt.raw_execute();
 			
-			let reader_ = iter.reader_mut().get_mut();
+			let _reader_ = iter.reader_mut().get_mut();
 			// reader.rdr.nread 에 접근해서 read 한 byte 를 접근할 수 있으면 좋겠다.
 			
 			// next_pos.byte() 는 100% 가 넘는 문제가 생김
