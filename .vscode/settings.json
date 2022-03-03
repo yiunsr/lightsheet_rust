@@ -6,5 +6,10 @@
         //"**/node_modules/*": true, // this excludes all folders 
                                 // named "node_modules" from 
                                 // the explore tree
+    },
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#1E138D",
+        "titleBar.activeBackground": "#2A1BC6",
+        "titleBar.activeForeground": "#FDFDFF"
     }
 }

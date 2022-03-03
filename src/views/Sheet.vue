@@ -24,6 +24,7 @@
   require('../../node_modules/slickgrid/lib/jquery-ui-1.11.3.min.js');
   require('../../node_modules/slickgrid/lib/jquery.event.drag-2.3.0.js');
   require('../../node_modules/slickgrid/lib/jquery.event.drop-2.3.0.js');
+  require('jquery-ui/ui/widgets/sortable.js');
   // debugger; // eslint-disable-line no-debugger
   require('../../node_modules/slickgrid/slick.core.js');
   require('../../node_modules/slickgrid/slick.editors.js');
@@ -60,7 +61,7 @@
           let columns = util_grid.initColHeader(_columns);
           var options = {
             columnPicker: {
-                columnTitle: "Columns"
+                columnTitle: "Columns",
             },
             editable: true,
             enableAddRow: true,

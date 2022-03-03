@@ -38,7 +38,7 @@ impl TableManager {
 
         let _ = conn.pragma_update(None, "synchronous", &"OFF".to_string());
         let _ = conn.pragma_update(None, "journal_mode", &"MEMORY".to_string());
-        let _ = conn.pragma_update(None, "cache_size", &"10000".to_string());
+        let _ = conn.pragma_update(None, "cache_size", &"16000000".to_string());
         let _ = conn.pragma_update(None, "locking_mode", &"EXCLUSIVE".to_string());
         let _ = conn.pragma_update(None, "temp_store", &"MEMORY".to_string());
         // // https://blog.devart.com/increasing-sqlite-performance.html
