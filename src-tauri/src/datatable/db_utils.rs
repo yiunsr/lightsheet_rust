@@ -26,6 +26,14 @@ pub fn create_query(tablename:&String, col_count: u32) -> String {
 	query
 }
 
+pub fn drop_query(tablename:&String) -> String {
+    let mut query = String::from("Drop TABLE `");
+    query.push_str(&tablename);
+    query.push_str("`;");
+    log::info!("drop_query : {}", query);
+	query
+}
+
 pub fn insert_query(tablename:&String, col_count: u32) -> String {
     let mut query = String::from("INSERT INTO `");
     query.push_str(&tablename);

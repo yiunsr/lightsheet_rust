@@ -93,7 +93,10 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: Str
 	//let iter = rdr.byte_records();
 
 	let mut old_percent = 0u32;
-	let ucol_count:usize = col_count as usize;
+	// let ucol_count:usize = col_count as usize;
+
+	let c_sql = db_utils::drop_query(&table_name);
+	let _ = conn.execute(&c_sql, NO_PARAMS);
 	
 	// let rec = records[0].unwrap();
 	let c_sql = db_utils::create_query(&table_name, col_count);
@@ -111,11 +114,16 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: Str
 			// Read the position immediately before each record.
 			// let next_pos = iter.reader().position().clone();
 			let opt_result_byterecord = iter.next();
-			if opt_result_byterecord .is_none(){
+			if opt_result_byterecord.is_none(){
 				break;
 			}
 			let next_pos = iter.reader().position().clone();
-			let record = opt_result_byterecord.unwrap().unwrap();
+			let record_result = opt_result_byterecord.unwrap();
+			if record_result.is_err(){
+				print!("record_result error");
+				continue;
+			}
+			let record = record_result.unwrap();
 
 			//i_stmt.raw_bind_int32(1 as usize, row_index as i32)?;
 			//i_stmt.raw_bind_parameter(1 as usize, row_index as i32)?;
@@ -150,6 +158,7 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: Str
 				}
 				
 			}
+			// print!("row_index : {}", row_index);
 			old_percent = cur_percent;
 		}
 	}

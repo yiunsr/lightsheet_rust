@@ -48,6 +48,7 @@
     },
     methods: {
       init: function(){
+        debugger; // eslint-disable-line no-debugger
         var _this = this;
         window.sheet.tableInfoCB = function(row_len, col_len){
           _this.row_len = row_len;
