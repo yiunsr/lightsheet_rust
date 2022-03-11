@@ -121,6 +121,10 @@ fn main() {
                 w.eval(&js);
               });
             },
+            CellEditDone {window_id, row_id, col_index, old_value, new_value} => {
+              let table_manager = get_table_manager();
+              let _ = table_manager.cell_edit(window_id, row_id, col_index, old_value, new_value);
+            },
             GetRows {window_id, from, to, cb} =>{
               let table_manager = get_table_manager();
               let rows_json = table_manager.get_rows(window_id, from, to);

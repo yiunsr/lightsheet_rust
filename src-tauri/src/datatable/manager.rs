@@ -100,8 +100,14 @@ impl TableManager {
         let conn = self.conn.as_mut().unwrap();
         csv_reader::get_rows(&conn, &table_name, 
             col_len, from, to)
-    } 
-    
+    }
+
+    pub fn cell_edit(&mut self, window_id:u32, row_id:u32, col_index:u32,
+            old_value: String, new_value: String) -> bool{
+        let table_name = self.get_table_name(window_id);
+        let conn = self.conn.as_mut().unwrap();
+        csv_reader::cell_edit(conn, &table_name, row_id, col_index, &old_value, &new_value)
+    }
 
 }
 

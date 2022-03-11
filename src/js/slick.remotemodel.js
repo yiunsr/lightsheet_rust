@@ -86,7 +86,6 @@ if (typeof jQuery === "undefined") {
       ensureData(from, to);
     }
   
-  
     function setSort(column, dir) {
       sortcol = column;
       sortdir = dir;
@@ -97,7 +96,11 @@ if (typeof jQuery === "undefined") {
       searchstr = str;
       clear();
     }
-  
+    
+    function updateData(rowID, col_name, value){
+      data[rowID][col_name] = value;
+      onDataLoaded.notify({from: rowID, to: rowID});
+    }
   
     init();
   
@@ -112,6 +115,7 @@ if (typeof jQuery === "undefined") {
       "reloadData": reloadData,
       "setSort": setSort,
       "setSearch": setSearch,
+      "updateData": updateData,
 
       // events
       "onDataLoading": onDataLoading,

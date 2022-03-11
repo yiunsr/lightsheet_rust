@@ -1,5 +1,4 @@
-# lightsheet_rust
-
+# build
 
 ### Compiles and hot-reloads for development
 ```
@@ -83,7 +82,4 @@ cd src-tauri
 yarn tauri:build
 ```
 
-## todo
-* edit cell
-* export csv
 

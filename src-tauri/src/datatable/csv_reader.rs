@@ -17,7 +17,7 @@ use rusqlite::params;
 use serde_json::value::Value;
 use serde_json::Number;
 use unicode_bom::Bom;
-
+use regex::Regex;
 
 use super::db_utils;
 use super::table_info::TableInfo;
@@ -205,4 +205,27 @@ pub fn get_rows(conn:&rusqlite::Connection, table_name:&String,
 	data_dict.entry(String::from("values")).or_insert(Value::Array(row_slice));
 	let json_str = serde_json::to_string(&data_dict).unwrap();
 	json_str
+}
+
+pub fn cell_edit(conn:&mut Connection, table_name:&String,
+	row_id:u32, col_index:u32, old_value:&String, new_value:&String) -> bool
+{
+	let re = Regex::new("[\"]").unwrap();
+	let double_quoted_new_value = re.replace_all(new_value, "\"\"");
+
+	let col_name = &db_utils::colname(col_index).to_owned();
+	let mut query = String::from("UPDATE ");
+	query.push_str(&table_name);
+	query.push_str(" SET ");
+	query.push_str(col_name);
+	query.push_str(" = \"");
+	query.push_str(&double_quoted_new_value);
+	query.push_str("\" WHERE id = ");
+	query.push_str(&row_id.to_string());
+	query.push_str(";");
+
+	let tx = conn.transaction().unwrap();
+	tx.execute(&query, NO_PARAMS).unwrap();
+	tx.commit().unwrap();
+	true
 }

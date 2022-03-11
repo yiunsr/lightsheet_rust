@@ -48,7 +48,6 @@
     },
     methods: {
       init: function(){
-        debugger; // eslint-disable-line no-debugger
         var _this = this;
         window.sheet.tableInfoCB = function(row_len, col_len){
           _this.row_len = row_len;
@@ -71,6 +70,9 @@
             asyncEditorLoading: false,
             autoEdit: false,
             rowHeight: 24,
+            editCommandHandler: function(item, column, editCommand){
+              _this.cellEditDone(item, column, editCommand);
+            }
           };
           var Slick = window.Slick;
           var remoteModel = new Slick.Data.RemoteModel();
@@ -154,6 +156,20 @@
             grid.resizeCanvas();
           }
         }
+      },
+      cellEditDone: function(item, column, editCommand){
+        let rowID = editCommand.row + 1;
+        let colName = column.name;
+        let oldValue = editCommand.prevSerializedValue;
+        let newValue = editCommand.serializedValue;
+        var common = window.common;
+        common.cellEditDone(rowID, colName, oldValue, newValue);
+        window.sheet.remoteModel.updateData(editCommand.row , colName, newValue);
+        //this.redrawView();
+      },
+      redrawView: function(){
+        var vp = this.grid.getViewport();
+        window.sheet.remoteModel.ensureData(vp.top, vp.bottom);
       }
     },
     created : function(){

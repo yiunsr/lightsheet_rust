@@ -52,6 +52,14 @@ export default {
       cb: cb,
     });
   },
+  cellEditDone(row_id, col_name, old_value, new_value){
+    let col_index = col_name = this.fromBase26(col_name) - 1;
+    window.__TAURI_INVOKE_HANDLER__({
+      cmd: 'cellEditDone',
+      window_id: window.window_id,
+      row_id: row_id, col_index: col_index, old_value: old_value, new_value: new_value
+    });
+  },
   initApp(){
     console.log("initApp");  
   },
@@ -99,6 +107,15 @@ export default {
     } while (value > 0);
   
     return converted;
+  },
+  fromBase26(alpabet){
+    // https://stackoverflow.com/a/9906193/6652082
+    var base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', i, j, result = 0;
+    for (i = 0, j = alpabet.length - 1; i < alpabet.length; i += 1, j -= 1) {
+      result += Math.pow(base.length, j) * (base.indexOf(alpabet[i]) + 1);
+    }
+  
+    return result;
   },
   
 }
