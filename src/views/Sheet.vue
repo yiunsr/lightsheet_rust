@@ -9,7 +9,9 @@
 
 <template>
   <div  ref="viewport">
-    <div ref="mainGrid" style="width:100%;height:calc(100vh - 36px - 24px);"></div>
+    <div ref="mainGrid" style="width:100%;height:calc(100vh - 36px - 24px);"
+      autofocus
+    ></div>
   </div>
 </template>
 
@@ -81,6 +83,7 @@
           
           const $el = _this.$refs.mainGrid;
           var grid = new Slick.Grid($el, remoteModel.data, columns, options);
+          window.grid = grid;
           _this.grid = grid;
           // grid.setSelectionModel(new Slick.CellSelectionModel());
           var onViewportChanged = function(){
@@ -100,8 +103,11 @@
           });
           // load the first page
           grid.onViewportChanged.notify();
-
           window.addEventListener('resize', _this.resizeWindow);
+
+          // debugger; // eslint-disable-line no-debugger
+          // set focus A1
+          grid.setActiveCell(0, 1);
         }
         var common = window.common;
         common.getTableInfo('sheet.tableInfoCB');

@@ -16,6 +16,7 @@
         href="#" onclick="location.reload();"
         target="_blank"
         text
+        tabindex="-1"
       >
         <span class="mr-2">reload</span>
         <v-icon>mdi-refresh</v-icon>
@@ -23,12 +24,14 @@
 
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
-          <v-btn  dense height="24px" width="24px"  v-on="on" color="info" x-small fab>
+          <v-btn  dense height="24px" width="24px"  v-on="on" color="info" x-small fab
+            tabindex="-1"
+          >
             <v-icon >fa-language</v-icon>
           </v-btn>
         </template>
       <v-list>
-        <v-list-item @click="changeLang('en')">
+        <v-list-item @click="changeLang('en')" >
           <v-list-item-title>English</v-list-item-title>
         </v-list-item>
         <v-list-item @click="changeLang('ko')">
@@ -40,7 +43,8 @@
       <div>
         <v-tooltip v-if="!$vuetify.theme.dark" bottom>
           <template v-slot:activator="{ on }">
-            <v-btn dense height="24px" width="24px" v-on="on" color="primary" x-small fab @click="darkMode">
+            <v-btn dense height="24px" width="24px" v-on="on" color="primary" x-small
+             fab @click="darkMode" tabindex="-1">
               <v-icon class="mr-1">mdi-moon-waxing-crescent</v-icon>
             </v-btn>
           </template>
@@ -49,7 +53,8 @@
 
         <v-tooltip v-else bottom>
           <template v-slot:activator="{ on }">
-            <v-btn  dense height="24px" width="24px"  v-on="on" color="primary" x-small fab @click="darkMode">
+            <v-btn  dense height="24px" width="24px"  v-on="on" color="primary" x-small 
+              fab @click="darkMode" tabindex="-1">
               <v-icon>mdi-white-balance-sunny</v-icon>
             </v-btn>
           </template>
@@ -62,7 +67,7 @@
       <router-view></router-view>
     </v-main>
 
-    <v-footer padless outlined a-0 height="24px">
+    <v-footer padless outlined a-0 height="24px" tabindex="-1">
       <v-col
         class="text-left py-0 subtitle-2"
         cols="12"

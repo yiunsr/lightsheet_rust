@@ -44,8 +44,8 @@ if (typeof jQuery === "undefined") {
 
     function ensureData(from, to) {   
       // debugger; // eslint-disable-line no-debugger
-      const marginTop = 50;
-      const marginBottom = 50;
+      const marginTop = 100;
+      const marginBottom = 100;
       if (to == -1){
         to = from + 100;
       }

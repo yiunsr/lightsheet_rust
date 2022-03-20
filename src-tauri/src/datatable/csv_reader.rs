@@ -179,16 +179,15 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: Str
 pub fn get_rows(conn:&rusqlite::Connection, table_name:&String, 
 	col_len: u32, from: u32, to: u32) -> String
 {
-	let from_ = from + 1;
 	let blank1 = String::from("");
 	let blank2 = String::from("");
 	let blank3 = String::from("");
 	let mut sql = db_utils::select_query(table_name, col_len, blank1, blank2, blank3);
-	sql.push_str(" WHERE id >= ?1 limit 100;");
+	sql.push_str(" WHERE id >= ?1 and id <= ?2");
 	let mut stmt = conn.prepare(&sql).unwrap();
 	let mut data_dict:HashMap<String, Value> = HashMap::new();
 	let mut row_slice:Vec<Value> = Vec::<Value>::with_capacity(100);
-	let mut rows = stmt.query(params![from_]).unwrap();
+	let mut rows = stmt.query(params![from, to]).unwrap();
 	while let Some(row) = rows.next().unwrap() {
 		let id_:u32 = row.get(0 as usize).unwrap();
 		let mut item:HashMap<String, Value> = HashMap::new();

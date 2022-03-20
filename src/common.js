@@ -5,17 +5,32 @@ export default {
     console.log(msg);
   },
   setTitle(title){
-    window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'setTitle',
-      title: title
-    })
+    if(isTauri){
+      window.__TAURI_INVOKE_HANDLER__({
+        cmd: 'setTitle',
+        title: title
+      })
+    }
+    else{
+      document.title = title;
+    }
   },
   confirm(msg, cb){
-    window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'confirm',
-      msg: msg,
-      cb: cb,
-    });
+    if(isTauri){
+      window.__TAURI_INVOKE_HANDLER__({
+        cmd: 'confirm',
+        msg: msg,
+        cb: cb,
+      });
+    }
+    else{
+      setTimeout(function() {
+        let ret = confirm(msg);
+        let js = "";
+        js += cb + "(" + ret + ")";
+        eval(js);
+      }, 1);
+    }
   },
   prompt(msg, cb, default_input = ""){
     window.__TAURI_INVOKE_HANDLER__({
