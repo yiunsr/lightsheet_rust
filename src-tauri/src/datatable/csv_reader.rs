@@ -80,7 +80,7 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: Str
 
 	let mut det = EncodingDetector::new();
 	det.feed(&buffer, true);
-	let enc = det.guess(None, false);
+	let enc = det.guess(None, true);
 	log::info!("file characterset detect: {}", enc.name());
 
 	let str_buffer = String::from_utf8_lossy(&buffer);
