@@ -56,7 +56,7 @@ pub fn get_col_count(readedstr:&str, sep:u8) -> u32 {
 }
 
 
-pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: String,cb:F) 
+pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, window_id:u32, cb:F) 
 		->Result<TableInfo, Box<dyn Error>>
 		where F: Fn(u32) -> ()
 {
@@ -95,14 +95,17 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: Str
 	let mut old_percent = 0u32;
 	// let ucol_count:usize = col_count as usize;
 
-	let c_sql = db_utils::drop_query(&table_name);
+	let c_sql = db_utils::drop_query(window_id, db_utils::TableType::MainTable);
+	let _ = conn.execute(&c_sql, NO_PARAMS);
+
+	let c_sql = db_utils::drop_query(window_id, db_utils::TableType::RowMeta);
 	let _ = conn.execute(&c_sql, NO_PARAMS);
 	
 	// let rec = records[0].unwrap();
-	let c_sql = db_utils::create_query(&table_name, col_count);
+	let c_sql = db_utils::create_query_main(window_id, col_count, false);
 	conn.execute(&c_sql, NO_PARAMS)?;
 
-	let i_query = db_utils::insert_query(&table_name, col_count);
+	let i_query = db_utils::insert_query(window_id, col_count);
 	let mut row_index:u32 = 1;
 	let mut iter = rdr.into_byte_records();
 
@@ -158,16 +161,24 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: Str
 				}
 				
 			}
-			// print!("row_index : {}", row_index);
+			// println!("row_index : {}", row_index);
 			old_percent = cur_percent;
 		}
 	}
+	{
+		let c_sql = db_utils::create_query_rowmeta(window_id);
+		println!("{}", &c_sql);
+		tx.execute(&c_sql, NO_PARAMS)?;
+		let c_sql = db_utils::insert_query_rowmeta(window_id);
+		tx.execute(&c_sql, NO_PARAMS)?;
+	}
 	tx.commit()?;
+
 	//conn.execute("Commit;", NO_PARAMS)?;
+	
 
 	println!("total row_index : {}", row_index);
 	let table_info = TableInfo {
-		table_name: table_name,
 		col_len: col_count,
 		row_len: row_index,
 	};
@@ -175,15 +186,14 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, table_name: Str
 	Ok(table_info)
 }
 
-
-pub fn get_rows(conn:&rusqlite::Connection, table_name:&String, 
+pub fn get_rows(conn:&rusqlite::Connection, window_id:u32, 
 	col_len: u32, from: u32, to: u32) -> String
 {
 	let blank1 = String::from("");
 	let blank2 = String::from("");
 	let blank3 = String::from("");
-	let mut sql = db_utils::select_query(table_name, col_len, blank1, blank2, blank3);
-	sql.push_str(" WHERE id >= ?1 and id <= ?2");
+	let where_q = "id >= ?1 and id <= ?2".to_string();
+	let sql = db_utils::select_query(window_id, col_len, where_q, blank2, blank3);
 	let mut stmt = conn.prepare(&sql).unwrap();
 	let mut data_dict:HashMap<String, Value> = HashMap::new();
 	let mut row_slice:Vec<Value> = Vec::<Value>::with_capacity(100);
@@ -204,6 +214,21 @@ pub fn get_rows(conn:&rusqlite::Connection, table_name:&String,
 	data_dict.entry(String::from("values")).or_insert(Value::Array(row_slice));
 	let json_str = serde_json::to_string(&data_dict).unwrap();
 	json_str
+}
+
+pub fn add_rows(conn:&mut Connection, window_id:u32, row_idx:u32, 
+	row_add_count:u32, row_len:u32, col_len:u32)
+{
+	let tx = conn.transaction().unwrap();
+	let c_sql = db_utils::add_rows_query(window_id, row_idx, row_add_count) ;
+	let _ = tx.execute(&c_sql, NO_PARAMS);
+
+	let c_sql_main = db_utils::append_blank_query(window_id, col_len);
+	let c_sql_row_meta = db_utils::append_blank_row_meta_query(window_id, col_len);
+	for i in 0..row_add_count-1 {
+		let _ = tx.execute(&c_sql_main, NO_PARAMS);
+	}
+	tx.commit().unwrap();
 }
 
 pub fn cell_edit(conn:&mut Connection, table_name:&String,
