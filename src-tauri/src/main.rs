@@ -133,6 +133,14 @@ fn main() {
                 w.eval(&js);
               });
             },
+            AddRows {window_id, row_idx, row_add_count, cb} =>{
+              let table_manager = get_table_manager();
+              table_manager.add_rows(window_id, row_idx, row_add_count);
+              // let js = format!("{}({});", cb, rows_json);
+              // _webview.dispatch(move |w| {
+              //   w.eval(&js);
+              // });
+            }
           }
           Ok(())
         }

@@ -46,14 +46,14 @@ fn test_read_csv(){
     println!("한국어 테스트");
     let file_path = "D:\\workspace\\vscode2\\hello_cargo\\res\\경상남도.txt".to_string();
     let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tt.db".to_string();
-    csv_reader::read_csv(db_path, file_path, test_callback);
+    csv_reader::read_csv(db_path, file_path, 1u32, test_callback);
 }
 
 #[test]
 fn test_read_csv_01(){
     let file_path = "D:\\workspace\\vscode\\lightsheet_rust\\res\\euc_kr.csv".to_string();
     let db_path = "D:\\workspace\\vscode\\lightsheet_rust\\tmp\\tt.db".to_string();
-    let _ret = csv_reader::read_csv(db_path, file_path, test_callback);
+    let _ret = csv_reader::read_csv(db_path, file_path, 1u32, test_callback);
     // match ret {
     //     Ok(file) => file,
     //     Err(err) => {

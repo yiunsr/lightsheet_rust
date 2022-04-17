@@ -93,13 +93,32 @@ export default {
     window.vm.$children[0].statusbar = status;
   },
   getRows(from, to, cb){
-    window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'getRows',
-      window_id: window.window_id,
-      from: from,
-      to: to,
-      cb: cb,
-    });
+    if(isTauri){
+      window.__TAURI_INVOKE_HANDLER__({
+        cmd: 'getRows',
+        window_id: window.window_id,
+        from: from,
+        to: to,
+        cb: cb,
+      });
+    }
+    // else{
+    //   setTimeout(function(){
+    //     let tableData = {};
+    //     cb()
+    //   });
+    // }
+  },
+  addRows(row_idx, row_add_count){
+    if(isTauri){
+      window.__TAURI_INVOKE_HANDLER__({
+        cmd: 'addRows',
+        window_id: window.window_id,
+        row_idx: row_idx,
+        row_add_count: row_add_count,
+        cb: "",
+      });
+    }
   },
   toBase26(value){
     value = Math.abs(value);
@@ -130,6 +149,22 @@ export default {
       result += Math.pow(base.length, j) * (base.indexOf(alpabet[i]) + 1);
     }
   
+    return result;
+  },
+  // https://stackoverflow.com/a/36806402/6652082
+  getCSSRule(ruleName) {
+    debugger; // eslint-disable-line no-debugger
+    ruleName = ruleName.toLowerCase();
+    var result = null;
+    var find = Array.prototype.find;
+
+    find.call(document.styleSheets, styleSheet => {
+        result = find.call(styleSheet.cssRules, cssRule => {
+            return cssRule instanceof CSSStyleRule 
+                && cssRule.selectorText.toLowerCase() == ruleName;
+        });
+        return result != null;
+    });
     return result;
   },
   

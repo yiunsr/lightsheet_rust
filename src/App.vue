@@ -30,15 +30,15 @@
             <v-icon >fa-language</v-icon>
           </v-btn>
         </template>
-      <v-list>
-        <v-list-item @click="changeLang('en')" >
-          <v-list-item-title>English</v-list-item-title>
-        </v-list-item>
-        <v-list-item @click="changeLang('ko')">
-          <v-list-item-title>한국어</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
+        <v-list>
+          <v-list-item @click="changeLang('en')" >
+            <v-list-item-title>English</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="changeLang('ko')">
+            <v-list-item-title>한국어</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
 
       <div>
         <v-tooltip v-if="!$vuetify.theme.dark" bottom>

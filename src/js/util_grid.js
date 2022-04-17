@@ -1,6 +1,6 @@
 // http://cwestblog.com/2013/09/05/javascript-snippet-convert-number-to-column-name/
 var __colNameList = [];
-var __maxColCount = 16384;
+var __maxColCount = 4096;
 function _prepareColName(){
   var index = 1;
   for(index = 1; index <= __maxColCount; index++){
@@ -21,6 +21,14 @@ export default{
   getColNames(){
     return __colNameList;
   },
+  getColIndx(colname){
+    var base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', i, j, result = 0;
+    for (i = 0, j = colname.length - 1; i < colname.length; i += 1, j -= 1) {
+      result += Math.pow(base.length, j) * (base.indexOf(colname[i]) + 1);
+    }
+  
+    return result;
+  },
   // http://cwestblog.com/2013/09/04/javascript-snippet-parse-a-spreadsheet-address/
   parseAddress(strCellAddr) {
     var i = strCellAddr.search(/\d/);
@@ -34,7 +42,7 @@ export default{
   getColInfos(col_count){
     var Slick = window.Slick;
     var columns = [
-          {id: "id", name: "id", field: "id", cssClass: "grid-row-hader", selectable: false}
+          {id: "id", name: "", field: "id", cssClass: "grid-row-hader", selectable: false}
       ];
     for(var index = 0; index < col_count; index++){
       var colname = this.getColName(index+1);

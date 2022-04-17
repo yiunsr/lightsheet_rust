@@ -16,4 +16,5 @@ pub enum Cmd {
   GetTableInfo { window_id: u32, cb: String},
   CellEditDone { window_id: u32, row_id: u32, col_index: u32, old_value: String, new_value: String},
   GetRows { window_id: u32, from: u32, to: u32, cb: String },
+  AddRows { window_id: u32, row_idx: u32, row_add_count: u32, cb: String },
 }

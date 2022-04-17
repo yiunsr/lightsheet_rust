@@ -15,5 +15,9 @@
 
     "help": "도움말",
     "help_about": "정보"
+  },
+  "context_menu": {
+    "add_row_above": "위에 행 추가", 
+    "add_row_below": "아래에 행 추가"
   }
 }

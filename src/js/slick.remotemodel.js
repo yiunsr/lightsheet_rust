@@ -44,8 +44,9 @@ if (typeof jQuery === "undefined") {
 
     function ensureData(from, to) {   
       // debugger; // eslint-disable-line no-debugger
-      const marginTop = 100;
-      const marginBottom = 100;
+      onDataLoading.notify();
+      const marginTop = 200;
+      const marginBottom = 200;
       if (to == -1){
         to = from + 100;
       }
@@ -74,7 +75,7 @@ if (typeof jQuery === "undefined") {
         setTimeout(function() {
           // debugger; // eslint-disable-line no-debugger 
           onDataLoaded.notify({from: from, to: to});
-        }, 10);
+        }, 1);
       }
       common.getRows(from, to, "window.temp.cbRowInfo");
     }

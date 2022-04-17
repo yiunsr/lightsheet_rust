@@ -16,5 +16,9 @@
 
     "help": "Help",
     "help_about": "About"
+  },
+  "context_menu": {
+    "add_row_above": "Add row above",
+    "add_row_below": "Add row below"
   }
 }

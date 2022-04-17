@@ -1,15 +1,9 @@
 use std::fs;
-use std::fs::File;
-use std::rc::Rc;
-use std::cell::RefCell;
-use std::sync::Arc;
-use std::sync::{Mutex, Once};
 use std::time::Instant;
 use std::collections::HashMap;
-use lazy_static::lazy_static;
 use rusqlite::Connection;
-// use dashmap::DashMap;
 
+use super::db_utils;
 use crate::datatable::csv_reader;
 use crate::datatable::table_info::TableInfo;
 
@@ -20,7 +14,6 @@ pub struct TableManager{
 }
 
 pub struct TableManagerItem{
-    table_name: String,
     row_len: u32,
     col_len: u32,
 }
@@ -54,9 +47,8 @@ impl TableManager {
         // temp_path.push("tmp.db");
         // let db_path = temp_path.into_os_string().into_string().unwrap();
         let now = Instant::now();
-        let table_name = self.get_table_name(window_id);
         let conn = self.conn.as_mut().unwrap();
-        let table_info = csv_reader::read_csv(conn, filepath, table_name.clone(), cb);
+        let table_info = csv_reader::read_csv(conn, filepath, window_id, cb);
         if let Err(e) = table_info{
             println!("error running example: {}", e);    
             return;
@@ -68,7 +60,6 @@ impl TableManager {
         let row_len = table_info.row_len;
         let col_len = table_info.col_len;
         self.table_hm.insert(window_id, TableManagerItem{
-            table_name: table_name,
             row_len: row_len,
             col_len: col_len,
         });
@@ -76,12 +67,6 @@ impl TableManager {
 
     pub fn get_temp_file_fath() -> String{
         "./tmp.db".to_string()
-    }
-
-    pub fn get_table_name(&self, window_id:u32) -> String{
-        let mut table_name = "datatbl_".to_string();
-        table_name.push_str(&window_id.to_string());
-        table_name
     }
 
     pub fn get_row_len(&self, window_id:u32) -> u32{
@@ -95,16 +80,24 @@ impl TableManager {
     }
     
     pub fn get_rows(&mut self, window_id:u32, from:u32, to:u32) -> String{
-        let table_name = self.get_table_name(window_id);
         let col_len = self.get_col_len(window_id);
         let conn = self.conn.as_mut().unwrap();
-        csv_reader::get_rows(&conn, &table_name, 
+        csv_reader::get_rows(&conn, window_id, 
             col_len, from, to)
+    }
+
+    pub fn add_rows(&mut self, window_id:u32, row_idx:u32, row_add_count:u32){
+        let tlb_item = self.table_hm.get(&window_id);
+        let tlb_item = tlb_item.unwrap();
+        let row_len = tlb_item.row_len;
+        let col_len = tlb_item.col_len;
+        let conn = self.conn.as_mut().unwrap();
+        csv_reader::add_rows(conn, window_id, row_idx, row_add_count, row_len, col_len);
     }
 
     pub fn cell_edit(&mut self, window_id:u32, row_id:u32, col_index:u32,
             old_value: String, new_value: String) -> bool{
-        let table_name = self.get_table_name(window_id);
+        let table_name = db_utils::get_table_name(window_id, db_utils::TableType::MainTable);
         let conn = self.conn.as_mut().unwrap();
         csv_reader::cell_edit(conn, &table_name, row_id, col_index, &old_value, &new_value)
     }

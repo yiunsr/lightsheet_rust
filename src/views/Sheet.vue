@@ -5,13 +5,51 @@
 .slick-row .slick-cell.active{
   padding-top: 2px;
 }
+
+.slick-cell.col-active{
+  background: #d4e7ff;
+}
+/* .slick-viewport-left{
+  overflow: hidden !important;
+} */
+
+
+#contextMenu {
+  background: #e1efc7;
+  border: 1px solid gray;
+  padding: 2px;
+  display: inline-block;
+  min-width: 100px;
+  -moz-box-shadow: 2px 2px 2px silver;
+  -webkit-box-shadow: 2px 2px 2px silver;
+  z-index: 99999;
+  margin-top: -30px;
+}
 </style>
+
 
 <template>
   <div  ref="viewport">
     <div ref="mainGrid" style="width:100%;height:calc(100vh - 36px - 24px);"
       autofocus
     ></div>
+
+     <v-menu
+      v-model="showContextMenu"
+      absolute
+      :position-x="contextMenuLeft"
+      :position-y="contextMenuTop"
+    >
+
+      <v-list dense>
+        <v-list-item
+          v-for="(item, index) in rowContextMenuItems" @click="selectMenu(item.menuID)"
+          :key="'row' + index"
+        >
+          <v-list-item-title>{{ $i18n.t("context_menu." + item.title ) }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </div>
 </template>
 
@@ -38,7 +76,16 @@
     name: 'GridSheet',
     data: function(){
         return {
-            row_len: 0, col_len: 0, colnames:[], remoteModel: {}, grid: {},
+          row_len: 0, col_len: 0, colnames:[], remoteModel: {}, grid: {},
+          mouseClickedCell: null,
+          showContextMenu: false, contextMenuTop: 0, contextMenuLeft: 0,
+          showRowContextMenu: false,
+          rowContextMenuItems: [
+            { title: 'add_row_above',  menuID: 'add_row_above'},
+            { title: 'add_row_below',  menuID: 'add_row_below' },
+          ],
+          
+          selCellCol: -1, selCellRow: -1,
         }
     },
     mounted: function(){
@@ -71,6 +118,8 @@
             enableColumnReorder: true,
             asyncEditorLoading: false,
             autoEdit: false,
+            frozenColumn: 0,
+            frozenRow: -1,
             rowHeight: 24,
             editCommandHandler: function(item, column, editCommand){
               _this.cellEditDone(item, column, editCommand);
@@ -87,28 +136,76 @@
           _this.grid = grid;
           // grid.setSelectionModel(new Slick.CellSelectionModel());
           var onViewportChanged = function(){
-            // debugger; // eslint-disable-line no-debugger
+            $(".slick-cell.r" + _this.selCellCol).addClass("col-active");
             var vp = grid.getViewport();
             window.sheet.remoteModel.ensureData(vp.top, vp.bottom);
           }
           var onScroll = window._.debounce(onViewportChanged, 250);
-          grid.onViewportChanged.subscribe(onScroll);
+          grid.onViewportChanged.subscribe(function(){
+            // debugger; // eslint-disable-line no-debugger
+            $(".slick-cell.r" + _this.selCellCol).addClass("col-active");
+            onScroll();
+          });
           grid.onSort.subscribe(onViewportChanged);
           remoteModel.onDataLoaded.subscribe(function (e, args) {
             for (var i = args.from; i <= args.to; i++) {
               grid.invalidateRow(i);
             }
             grid.updateRowCount();
+            // debugger; // eslint-disable-line no-debugger
             grid.render();
+            $(".slick-cell.r" + _this.selCellCol).addClass("col-active");
+          });
+          remoteModel.onDataLoading.subscribe(function () {
+            $(".slick-cell.r" + _this.selCellCol).addClass("col-active");
           });
           // load the first page
           grid.onViewportChanged.notify();
           window.addEventListener('resize', _this.resizeWindow);
 
+          // mouse right click
+          grid.onContextMenu.subscribe(function (e) {
+            // debugger; // eslint-disable-line no-debugger
+            e.preventDefault();
+            let cell = grid.getCellFromEvent(e);
+            grid.setActiveCell(cell.row, cell.cell);
+            _this.mouseClickedCell = cell;
+            _this.contextMenuTop = e.pageY;
+            _this.contextMenuLeft = e.pageX;
+            if(cell.cell == 0){
+              _this.showContextMenu = true;
+              _this.showRowContextMenu = true;
+            }
+          });
+
+          grid.onHeaderClick.subscribe(function(e, args) {
+            var colID = args.column.id;
+            console.log(colID);
+          });
+          grid.onHeaderContextMenu.subscribe(function(e, args) {
+            // debugger; // eslint-disable-line no-debugger
+            let colID = args.column.id;
+            let colIdx = util_grid.getColIndx(colID)
+            console.log(colIdx);
+          });
+          grid.onActiveCellChanged.subscribe(function(e, args) {
+            // debugger; // eslint-disable-line no-debugger
+            _this.selCellCol = args.cell;
+            _this.selCellRow = args.row;
+            $(".col-active").removeClass("col-active");
+            $(".slick-cell.r" + args.cell).addClass("col-active");
+          });
+          
+
           // debugger; // eslint-disable-line no-debugger
           // set focus A1
           grid.setActiveCell(0, 1);
         }
+
+        $("body").one("click", function () {
+          _this.showContextMenu = false;
+          _this.showRowContextMenu = false;
+        });
         var common = window.common;
         common.getTableInfo('sheet.tableInfoCB');
       },
@@ -164,19 +261,36 @@
         }
       },
       cellEditDone: function(item, column, editCommand){
-        let rowID = editCommand.row + 1;
+        let rowID = item.id;
         let colName = column.name;
         let oldValue = editCommand.prevSerializedValue;
         let newValue = editCommand.serializedValue;
         var common = window.common;
         common.cellEditDone(rowID, colName, oldValue, newValue);
+        console.log("row id : " + rowID);
         window.sheet.remoteModel.updateData(editCommand.row , colName, newValue);
         //this.redrawView();
       },
       redrawView: function(){
         var vp = this.grid.getViewport();
         window.sheet.remoteModel.ensureData(vp.top, vp.bottom);
-      }
+      },
+      selectMenu: function(menuID){
+        // debugger; // eslint-disable-line no-debugger
+        let common = window.common;
+        switch(menuID){
+          case "add_row_above":{
+            common.addRows(this.selCellRow, 1);
+            break;
+          }
+          case "add_row_below":{
+            common.addRows(this.selCellRow+1, 1);
+            break;
+          }
+          
+        }
+        window.sheet.remoteModel.data.length += 1;
+      },
     },
     created : function(){
     }

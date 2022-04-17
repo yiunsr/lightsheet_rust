@@ -5,7 +5,6 @@
 .slick-row .slick-cell.active{
   padding-top: 2px;
 }
-
 </style>
 
 <template>
@@ -17,7 +16,7 @@
 <script>
   require('../../node_modules/slickgrid/slick.grid.css');
   //require('../../node_modules/slickgrid/slick-default-theme.css');
-  require('../assets/plugins-gdoc-style.css');
+  //require('../assets/plugins-gdoc-style.css');
 
   global.jQuery = require('jquery');
   var $ = global.jQuery;
@@ -50,14 +49,15 @@
     methods: {
       init: function(){
         var _this = this;
-        window.sheet.tableInfoCB = function(row_len, col_len){
-          _this.row_len = row_len;
+
+        setTimeout(function(){
+          var col_len = 10;
+          var row_len = 100;
+          _this.row_len = 200;
           _this.col_len = col_len;
-          _this.colnames = _this.getColnames(col_len);
-          console.log(row_len);
-          console.log(col_len);
-          // debugger; // eslint-disable-line no-debugger
-          var util_grid = window.util_grid;
+          _this.colnames = _this.getColnames(10);
+        
+        var util_grid = window.util_grid;
           var _columns = util_grid.getColInfos(col_len);
           let columns = util_grid.initColHeader(_columns);
           var options = {
@@ -103,9 +103,7 @@
           grid.onViewportChanged.notify();
 
           window.addEventListener('resize', _this.resizeWindow);
-        }
-        var common = window.common;
-        common.getTableInfo('sheet.tableInfoCB');
+        }, 100);
       },
       getColnames: function(col_len){
         // debugger; // eslint-disable-line no-debugger 

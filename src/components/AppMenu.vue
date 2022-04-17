@@ -285,6 +285,14 @@ export default {
                 router.push({ path: '/sheettest' })
                 }
               },
+              { text: "sheettest2", click:() =>  {
+                router.push({ path: '/sheettest2' })
+                }
+              },
+              { text: "sheettest3", click:() =>  {
+                router.push({ path: '/sheettest3' })
+                }
+              },
               { text: "history back", click:() =>  {
                 router.go(-1);
                 }
