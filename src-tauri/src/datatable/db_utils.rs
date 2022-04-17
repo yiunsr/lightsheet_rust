@@ -170,8 +170,14 @@ pub fn append_blank_query(window_id:u32, col_len: u32) -> String{
 	query
 }
 
-pub fn append_blank_row_meta_query(window_id:u32, row_idx: u32, col_len: u32) -> String{
-
+pub fn append_blank_row_meta_query(window_id:u32, row_len: u32) -> String{
+    let tablename = get_table_name(window_id, TableType::MainTable);
+    let mut query = String::from("INSERT INTO `");
+    query.push_str(&tablename);
+    query.push_str(&"(row_meta_id, row_idx, row_meta_status)");
+    let values_q = format!("VALUES({row_len}, {row_len}, 1);", row_len=row_len);
+    query.push_str(&values_q);
+    query
 }
 
 pub fn distinct_col_query(tablename:&String, col_index: u32) -> String {
