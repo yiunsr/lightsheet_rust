@@ -14,7 +14,19 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "justMyCode": false,
-          },
+        },
+        {
+            "name": "Window MSVC Release",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "./src-tauri/target/release/lightsheet-rust.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                { "name": "RUST_BACKTRACE", "value": "full"}
+            ],
+        },
         {
             "type": "lldb",
             "request": "launch",

@@ -17,6 +17,14 @@ pub struct TableManagerItem{
     row_len: u32,
     col_len: u32,
 }
+impl TableManagerItem {
+    fn set_row_len(&mut self, row_len: u32){
+        self.row_len = row_len;
+    }
+    fn set_col_len(&mut self, col_len: u32){
+        self.col_len = col_len;
+    }
+}
 
 impl TableManager {
     // Another static method, taking two arguments:
@@ -87,12 +95,13 @@ impl TableManager {
     }
 
     pub fn add_rows(&mut self, window_id:u32, row_idx:u32, row_add_count:u32){
-        let tlb_item = self.table_hm.get(&window_id);
+        let tlb_item = self.table_hm.get_mut(&window_id);
         let tlb_item = tlb_item.unwrap();
         let row_len = tlb_item.row_len;
         let col_len = tlb_item.col_len;
         let conn = self.conn.as_mut().unwrap();
         csv_reader::add_rows(conn, window_id, row_idx, row_add_count, row_len, col_len);
+        tlb_item.set_row_len(row_len + row_add_count);
     }
 
     pub fn cell_edit(&mut self, window_id:u32, row_id:u32, col_index:u32,

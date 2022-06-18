@@ -96,9 +96,11 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, window_id:u32, 
 	// let ucol_count:usize = col_count as usize;
 
 	let c_sql = db_utils::drop_query(window_id, db_utils::TableType::MainTable);
+	println!("{}",c_sql);
 	let _ = conn.execute(&c_sql, NO_PARAMS);
 
 	let c_sql = db_utils::drop_query(window_id, db_utils::TableType::RowMeta);
+	println!("{}",c_sql);
 	let _ = conn.execute(&c_sql, NO_PARAMS);
 	
 	// let rec = records[0].unwrap();
@@ -177,10 +179,10 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, window_id:u32, 
 	//conn.execute("Commit;", NO_PARAMS)?;
 	
 
-	println!("total row_index : {}", row_index);
+	println!("total row_index : {}", row_index - 1);
 	let table_info = TableInfo {
 		col_len: col_count,
-		row_len: row_index,
+		row_len: row_index - 1,
 	};
 	
 	Ok(table_info)
@@ -220,13 +222,27 @@ pub fn add_rows(conn:&mut Connection, window_id:u32, row_idx:u32,
 	row_add_count:u32, row_len:u32, col_len:u32)
 {
 	let tx = conn.transaction().unwrap();
-	let c_sql = db_utils::add_rows_query(window_id, row_idx, row_add_count) ;
-	let _ = tx.execute(&c_sql, NO_PARAMS);
-
-	let c_sql_main = db_utils::append_blank_query(window_id, col_len);
-	let c_sql_row_meta = db_utils::append_blank_row_meta_query(window_id, col_len);
-	for i in 0..row_add_count-1 {
-		let _ = tx.execute(&c_sql_main, NO_PARAMS);
+	{
+		let c_sql = db_utils::move_for_add_rows_query_rowmeta(window_id, row_idx, row_add_count) ;
+		println!("{}", c_sql);
+		let _ = tx.execute(&c_sql, NO_PARAMS);
+	}
+	{
+		let c_sql_main = db_utils::insert_blank_query(window_id, col_len);
+		println!("{}", c_sql_main);
+		for row_i in 0..row_add_count{
+			let _ = tx.execute(&c_sql_main, NO_PARAMS);
+		}
+	}
+	{
+		let c_sql_row_meta = db_utils::insert_blank_query_rowmeta(window_id);
+		println!("{}", c_sql_row_meta);
+		let mut i_stmt = tx.prepare(&c_sql_row_meta).unwrap();
+		for row_i in 0..row_add_count{
+			i_stmt.raw_bind_parameter(1 as usize, (row_len + row_i + 1) as i32).unwrap();
+			i_stmt.raw_bind_parameter(2 as usize, (row_idx + row_i) as i32).unwrap();
+			let _= i_stmt.raw_execute();
+		}
 	}
 	tx.commit().unwrap();
 }

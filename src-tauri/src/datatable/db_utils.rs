@@ -102,9 +102,7 @@ pub fn insert_query_rowmeta(window_id:u32) -> String {
 pub fn select_query(window_id:u32, col_count:u32, where_:String, group:String, having: String) -> String {
     let tablename = get_table_name(window_id, TableType::MainTable);
     let tablename_rowmeta = get_table_name(window_id, TableType::RowMeta);
-    let mut query = String::from("Select ");
-    let select_q = format!("{main}.id, ", main=tablename);
-    query.push_str(&select_q);
+    let mut query = String::from("Select row_idx,");
     let mut col_names_query = String::new();
     for i in 0..col_count-1 {
         col_names_query.push_str(&colname(i));
@@ -135,32 +133,32 @@ pub fn select_query(window_id:u32, col_count:u32, where_:String, group:String, h
 	query
 }
 
-pub fn add_rows_query(window_id:u32, row_idx: u32, row_add_count: u32) -> String{
+pub fn move_for_add_rows_query_rowmeta(window_id:u32, row_idx: u32, row_add_count: u32) -> String{
     let mut query = String::from("UPDATE ");
     let tablename = get_table_name(window_id, TableType::RowMeta);
     query.push_str(&tablename);
     query.push_str(" SET row_idx = row_idx +");
     query.push_str(&row_add_count.to_string());
-    query.push_str(" WHERE id > ");
+    query.push_str(" WHERE row_idx >= ");
     query.push_str(&row_idx.to_string());
     query.push_str(";");
     query
 }
 
-pub fn append_blank_query(window_id:u32, col_len: u32) -> String{
+pub fn insert_blank_query(window_id:u32, col_len: u32) -> String{
     let tablename = get_table_name(window_id, TableType::MainTable);
     let mut query = String::from("INSERT INTO `");
     query.push_str(&tablename);
     query.push('`');
     let mut col_names_query = String::from("id, ");
-    let mut col_values_query = String::from("?,");
+    let mut col_values_query = String::from("null,");
     for i in 0..col_len-1 {
         col_names_query.push_str(&colname(i));
         col_names_query.push_str(" , ");
-        col_values_query.push_str( "?,");
+        col_values_query.push_str( "'',");
     }
     col_names_query .push_str(&colname(col_len - 1));
-    col_values_query.push_str("?");
+    col_values_query.push_str("''");
     query.push('(');
     query.push_str(&col_names_query);
     query.push_str(")  values (");
@@ -170,13 +168,11 @@ pub fn append_blank_query(window_id:u32, col_len: u32) -> String{
 	query
 }
 
-pub fn append_blank_row_meta_query(window_id:u32, row_len: u32) -> String{
-    let tablename = get_table_name(window_id, TableType::MainTable);
-    let mut query = String::from("INSERT INTO `");
+pub fn insert_blank_query_rowmeta(window_id:u32) -> String{
+    let tablename = get_table_name(window_id, TableType::RowMeta);
+    let mut query = String::from("INSERT INTO ");
     query.push_str(&tablename);
-    query.push_str(&"(row_meta_id, row_idx, row_meta_status)");
-    let values_q = format!("VALUES({row_len}, {row_len}, 1);", row_len=row_len);
-    query.push_str(&values_q);
+    query.push_str(&"(row_meta_id, row_idx, row_meta_status)  VALUES(?, ?, 1);");
     query
 }
 
