@@ -88,8 +88,8 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, window_id:u32, 
 	let col_count = get_col_count(&str_buffer, sep);
 
 	let rdr = csv::ReaderBuilder::new().delimiter(sep)
+		.has_headers(false)
 		.from_reader(file);
-	//.delimiter(sep);
 	//let iter = rdr.byte_records();
 
 	let mut old_percent = 0u32;
@@ -161,7 +161,6 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, window_id:u32, 
 				else if cur_percent == 100{
 					cb(cur_percent);
 				}
-				
 			}
 			// println!("row_index : {}", row_index);
 			old_percent = cur_percent;
@@ -175,9 +174,6 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, window_id:u32, 
 		tx.execute(&c_sql, NO_PARAMS)?;
 	}
 	tx.commit()?;
-
-	//conn.execute("Commit;", NO_PARAMS)?;
-	
 
 	println!("total row_index : {}", row_index - 1);
 	let table_info = TableInfo {
