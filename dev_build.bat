@@ -1,57 +1,57 @@
 SET TAURI_CONFIG= ^
 { ^
-    "ctx": {}, ^
-    "build":{ ^
-      "devPath": "http://localhost:8080" ^
+  "$schema": "..\\node_modules/@tauri-apps/cli\\schema.json", ^
+  "build":{ ^
+    "devPath": "http://localhost:8080", ^
+    "distDir": "../dist", ^
+    "beforeBuildCommand": "yarn build", ^
+    "withGlobalTauri": true}, ^
+  "package": { ^
+    "productName": "lightsheet_rust", ^
+    "version": "0.1.0" ^
+  }, ^
+  "tauri": { ^
+    "allowlist": { ^
+      "all": true ^
     }, ^
-    "tauri": { ^
-      "embeddedServer": { ^
-        "active": true ^
+    "bundle": { ^
+      "active": true,  ^
+      "targets": "all", ^
+      "identifier": "com.labstoo.lightsheet", ^
+      "icon": [ ^
+        "icons/32x32.png", ^
+        "icons/128x128.png", ^
+        "icons/128x128@2x.png", ^
+        "icons/icon.icns", ^
+        "icons/icon.ico" ^
+      ], ^
+      "resources": [], ^
+      "externalBin": [], ^
+      "copyright": "", ^
+      "category": "DeveloperTool", ^
+      "shortDescription": "", ^
+      "longDescription": "", ^
+      "deb": { ^
+        "depends": [] ^
       }, ^
-      "bundle": { ^
-        "active": true,  ^
-        "targets": "all", ^
-        "identifier": "com.tauri.dev", ^
-        "icon": [ ^
-          "icons/32x32.png", ^
-          "icons/128x128.png", ^
-          "icons/128x128@2x.png", ^
-          "icons/icon.icns", ^
-          "icons/icon.ico" ^
-        ], ^
-        "resources": [], ^
-        "externalBin": [], ^
-        "copyright": "", ^
-        "category": "DeveloperTool", ^
-        "shortDescription": "", ^
-        "longDescription": "", ^
-        "deb": { ^
-          "depends": [], ^
-          "useBootstrapper": false ^
-        }, ^
-        "osx": { ^
-          "frameworks": [], ^
-          "minimumSystemVersion": "", ^
-          "useBootstrapper": false ^
-        }, ^
-        "exceptionDomain": "" ^
-      }, ^
-      "allowlist": { ^
-        "all": true ^
-      }, ^
-      "window": { ^
-        "title": "lightsheet", ^
-        "width": 800, ^
-        "height": 600, ^
-        "resizable": true, ^
-        "fullscreen": false ^
-      }, ^
-      "security": { ^
-        "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'" ^
-      }, ^
-      "inliner": { ^
-        "active": true ^
+      "macOS": { ^
+        "entitlements": null, ^
+        "exceptionDomain": "", ^
+        "frameworks": [], ^
+        "providerShortName": null, ^
+        "signingIdentity": null ^
       } ^
+    }, ^
+    "windows": [{ ^
+      "title": "lightsheet", ^
+      "width": 800, ^
+      "height": 600, ^
+      "resizable": true, ^
+      "fullscreen": false ^
+    }], ^
+    "security": { ^
+      "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'" ^
     } ^
-  }
-cargo build
+  } ^
+} 
+cargo build --no-default-features

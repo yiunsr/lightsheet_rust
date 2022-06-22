@@ -253,7 +253,11 @@ export default {
           {
             text: "Debug",
             menu: [
-              { text: "Title test", click:() =>  common.setTitle("setTitle (한국어)") },
+              { text: "Title test", click:() =>  {
+                  // debugger;  // eslint-disable-line no-debugger
+                  common.setTitle("setTitle (한국어)") 
+                }
+              },
               { text: "Alert test", click:() =>  alert("Alert Test (한국어)") },
               { text: "confirm test", click:() =>  {
                 window.__menu__confirm_test = function(result){

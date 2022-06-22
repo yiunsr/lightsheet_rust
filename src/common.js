@@ -1,4 +1,4 @@
-const isTauri = !!window.__TAURI_INVOKE_HANDLER__;
+const isTauri = !!window.__TAURI__;
 
 export default {
   log(msg){
@@ -6,10 +6,9 @@ export default {
   },
   setTitle(title){
     if(isTauri){
-      window.__TAURI_INVOKE_HANDLER__({
-        cmd: 'setTitle',
-        title: title
-      })
+      window.__TAURI__.invoke(
+        'set_title', {title: title}
+      )
     }
     else{
       document.title = title;

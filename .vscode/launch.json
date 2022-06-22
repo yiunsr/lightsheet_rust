@@ -9,7 +9,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "./src-tauri/target/debug/lightsheet-rust.exe",
-            "args": [],
+            "args": ["--no-default-features"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
