@@ -207,7 +207,9 @@
           _this.showRowContextMenu = false;
         });
         var common = window.common;
-        common.getTableInfo('sheet.tableInfoCB');
+        common.getTableInfo().then(function(res){
+            window.sheet.tableInfoCB(res.row_len, res.col_len)
+          });
       },
       getColnames: function(col_len){
         // debugger; // eslint-disable-line no-debugger 

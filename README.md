@@ -80,7 +80,7 @@ cd src-tauri
 
 ### Compiles and minifies for production
 ```
-yarn tauri:build
+yarn tauri build
 ```
 
 ## todo

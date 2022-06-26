@@ -12,7 +12,10 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true
+      "all": true,
+      "window": {
+        "create": true
+      }
     },
     "bundle": {
       "active": true, 
@@ -43,6 +46,7 @@
       }
     },
     "windows": [{
+      "label": "main_1",
       "title": "lightsheet",
       "width": 800,
       "height": 600,

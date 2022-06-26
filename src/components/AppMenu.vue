@@ -110,6 +110,7 @@ import VueFileToolbarMenu from 'vue-file-toolbar-menu';
 import common from '../common.js'
 import ui from '../ui.js'
 import router from '../router'
+
 // for dynamic css variables
 Vue.component("v-style", {
   render (createElement) { return createElement("style", this.$slots.default); }
@@ -279,6 +280,9 @@ export default {
               }},
               { text: "Change Status", click:() =>   {
                 common.setStatusbar("statusbar 설정");
+              }},
+              { text: "Menu label", click:() =>   {
+                common.getLabel();
               }},
               { is: "separator" },
               { text: "home", click:() =>  {

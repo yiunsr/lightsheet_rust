@@ -5,16 +5,22 @@ var _filepath;
 // url.searchParams.get("path")
 export default {
   fileOpen(){
+    let _this = this;
     let path = new URL(window.location).searchParams.get("path");
     if(path){
-      window.__menu__fileOpen = function(result){
-        if(result)
-          common.fileOpenDialog("ui._fileOpenStart");
-      };
-      common.confirm(window.vm.$i18n.t("menu.file_close_before_open"), "__menu__fileOpen");
+      confirm(window.vm.$i18n.t("menu.file_close_before_open"), "__menu__fileOpen")
+        .then(function(result){
+          if(result){
+            common.fileOpenDialog("ui._fileOpenStart").then(function(res) {
+              _this._fileOpenStart(res.filepath);
+            });
+          }
+        });
     }
     else{
-      common.fileOpenDialog("ui._fileOpenStart");
+      common.fileOpenDialog("ui._fileOpenStart").then(function(res) {
+        _this._fileOpenStart(res.filepath);
+      });
     }
   },
   _fileOpenStart(filepath){

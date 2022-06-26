@@ -16,11 +16,9 @@ export default {
   },
   confirm(msg, cb){
     if(isTauri){
-      window.__TAURI_INVOKE_HANDLER__({
-        cmd: 'confirm',
-        msg: msg,
-        cb: cb,
-      });
+      window.__TAURI__.invoke(
+        'confirm', {msg: msg}
+      );
     }
     else{
       setTimeout(function() {
@@ -46,25 +44,19 @@ export default {
     });
   },
   fileOpen(path, cb){
-    window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'fileOpen',
-      window_id: window.window_id,
-      path: path,
-      cb: cb,
-    });
+    return window.__TAURI__.invoke(
+      'file_open', {path: path, cb:cb}
+    );
   },
-  fileOpenDialog(cb){
-    window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'fileOpenDialog',
-      cb: cb,
-    });
+  fileOpenDialog(){
+    return window.__TAURI__.invoke(
+      'file_open_dialog', {}
+    );
   },
   getTableInfo(cb){
-    window.__TAURI_INVOKE_HANDLER__({
-      window_id: window.window_id,
-      cmd: 'getTableInfo',
-      cb: cb,
-    });
+    return window.__TAURI__.invoke(
+      "get_table_info", {cb: cb}
+    );
   },
   cellEditDone(row_id, col_name, old_value, new_value){
     let col_index = col_name = this.fromBase26(col_name) - 1;
@@ -91,33 +83,22 @@ export default {
   setStatusbar(status){
     window.vm.$children[0].statusbar = status;
   },
+  getLabel(){
+    window.__TAURI__.invoke(
+      'get_label', {}
+    )
+  },
   getRows(from, to, cb){
-    if(isTauri){
-      window.__TAURI_INVOKE_HANDLER__({
-        cmd: 'getRows',
-        window_id: window.window_id,
-        from: from,
-        to: to,
-        cb: cb,
-      });
-    }
-    // else{
-    //   setTimeout(function(){
-    //     let tableData = {};
-    //     cb()
-    //   });
-    // }
+    return  window.__TAURI__.invoke(
+      'get_rows', {from: from, to: to,cb: cb}
+    );
   },
   addRows(row_idx, row_add_count){
-    if(isTauri){
-      window.__TAURI_INVOKE_HANDLER__({
-        cmd: 'addRows',
-        window_id: window.window_id,
+    return  window.__TAURI__.invoke(
+      'add_rows', {
         row_idx: row_idx,
-        row_add_count: row_add_count,
-        cb: "",
+        row_add_count: row_add_count
       });
-    }
   },
   toBase26(value){
     value = Math.abs(value);
@@ -167,13 +148,4 @@ export default {
     return result;
   },
   
-}
-
-if(isTauri){
-  window.alert = function (msg) {
-    window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'alert',
-      msg: msg
-    })
-  }
 }
