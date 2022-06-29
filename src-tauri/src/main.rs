@@ -136,16 +136,6 @@ async fn get_table_info(window: Window) -> Result<Value, APIError>{
 }
 
 #[command]
-async fn cell_edit_done(window: Window, row_id: u32, col_index: u32, old_value: String, new_value: String) -> Result<Value, APIError>{
-  let table_manager = get_table_manager();
-  let window_id = get_window_id(&window);
-  let _ = table_manager.cell_edit(window_id, row_id, col_index, old_value, new_value);
-  let res_json = format!(r#"{{"result": {}}}"#, true);
-  let v: Value = serde_json::from_str(&res_json).unwrap();
-  Ok(v)
-}
-
-#[command]
 async fn get_rows(window: Window, from: u32, to: u32, cb: String) -> Result<Value, APIError>{
   let table_manager = get_table_manager();
   let window_id = get_window_id(&window);
@@ -159,13 +149,23 @@ async fn get_rows(window: Window, from: u32, to: u32, cb: String) -> Result<Valu
 }
 
 #[command]
-async fn add_rows(window: Window, row_idx: u32, row_add_count: u32, cb: String) -> Result<Value, APIError>{
+async fn add_rows(window: Window, row_idx: u32, row_add_count: u32) -> Result<Value, APIError>{
   let table_manager = get_table_manager();
   let window_id = get_window_id(&window);
   table_manager.add_rows(window_id, row_idx, row_add_count);
   // let js = format!("{}({});", cb, rows_json);
   // window.eval(&js);
 
+  let res_json = format!(r#"{{"result": {}}}"#, true);
+  let v: Value = serde_json::from_str(&res_json).unwrap();
+  Ok(v)
+}
+
+#[command]
+async fn cell_edit_done(window: Window, row_id: u32, col_index: u32, old_value: String, new_value: String) -> Result<Value, APIError>{
+  let table_manager = get_table_manager();
+  let window_id = get_window_id(&window);
+  let _ = table_manager.cell_edit(window_id, row_id, col_index, old_value, new_value);
   let res_json = format!(r#"{{"result": {}}}"#, true);
   let v: Value = serde_json::from_str(&res_json).unwrap();
   Ok(v)
@@ -181,7 +181,6 @@ fn main() {
     .menu(tauri::Menu::os_default(&context.package_info().name))
     .invoke_handler(tauri::generate_handler![
       alert, confirm, prompt, file_open_dialog, file_open, set_title, get_label,
-      get_table_info, cell_edit_done,
-      get_rows, add_rows
+      get_table_info, get_rows, add_rows, cell_edit_done
     ]).run(context);
 }

@@ -282,13 +282,18 @@
         let common = window.common;
         switch(menuID){
           case "add_row_above":{
-            common.addRows(this.selCellRow+1, 1);
-            this.redrawView();
+            let _this = this;
+            common.addRows(this.selCellRow+1, 1).then(function(){
+              _this.redrawView();
+            });
             break;
           }
           case "add_row_below":{
-            common.addRows(this.selCellRow+2, 1);
-            this.redrawView();
+            let _this = this;
+            common.addRows(this.selCellRow+2, 1).then(function(){
+              _this.redrawView();
+            });
+            
             break;
           }
           

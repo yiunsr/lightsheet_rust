@@ -78,9 +78,23 @@ cd src-tauri
 ..\dev_build.bat
 ```
 
+
+### debug 
+
+```
+yarn tauri dev
+or 
+cargo tauri dev
+or 
+cargo build --no-default-features
+```
+
+
 ### Compiles and minifies for production
 ```
 yarn tauri build
+or 
+cargo tauri build
 ```
 
 ## todo

@@ -60,14 +60,15 @@ export default {
   },
   cellEditDone(row_id, col_name, old_value, new_value){
     let col_index = col_name = this.fromBase26(col_name) - 1;
-    window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'cellEditDone',
-      window_id: window.window_id,
-      row_id: row_id, col_index: col_index, old_value: old_value, new_value: new_value
-    });
+    return window.__TAURI__.invoke(
+      "cell_edit_done", {
+        rowId: row_id, colIndex: col_index,
+        oldValue: old_value, newValue: new_value
+      }
+    );
   },
   initApp(){
-    console.log("initApp");  
+    console.log("initApp");
   },
   exit(){
   },
@@ -96,8 +97,8 @@ export default {
   addRows(row_idx, row_add_count){
     return  window.__TAURI__.invoke(
       'add_rows', {
-        row_idx: row_idx,
-        row_add_count: row_add_count
+        rowIdx: row_idx,
+        rowAddCount: row_add_count
       });
   },
   toBase26(value){
