@@ -18,7 +18,7 @@
         --demo-text-box-shadow: 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 
         --bar-font-color: rgb(32, 33, 36);
-        --bar-font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+        --bar-font-family: 'Noto Sans KR', Helvetica, Arial, sans-serif;
         --bar-font-size: 15px;
         --bar-font-weight: 500;
         --bar-letter-spacing: 0.2px;
@@ -66,7 +66,7 @@
         --demo-text-box-shadow: 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 
         --bar-font-color: rgb(255, 255, 255);
-        --bar-font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+        --bar-font-family: 'Noto Sans KR', Helvetica, Arial, sans-serif;
         --bar-font-size: 15px;
         --bar-font-weight: 500;
         --bar-letter-spacing: 0.2px;

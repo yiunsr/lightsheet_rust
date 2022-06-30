@@ -112,6 +112,27 @@
   }
 </style>
 
+<style>
+  @font-face {
+    font-family: 'Noto Sans KR';
+    src: url("./assets/NotoSansKR-Regular.woff2");
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans KR';
+    src: url("./assets/NotoSansKR-Bold.woff2");
+    font-weight: bold;
+    font-style: normal;
+  }
+
+  html, body{
+    overflow-y: hidden;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+</style>
+
 <script>
 import AppMenu from './components/AppMenu';
 
