@@ -106,9 +106,8 @@ impl TableManager {
 
     pub fn cell_edit(&mut self, window_id:u32, row_id:u32, col_index:u32,
             old_value: String, new_value: String) -> bool{
-        let table_name = db_utils::get_table_name(window_id, db_utils::TableType::MainTable);
         let conn = self.conn.as_mut().unwrap();
-        csv_reader::cell_edit(conn, &table_name, row_id, col_index, &old_value, &new_value)
+        csv_reader::cell_edit(conn, window_id, row_id, col_index, &old_value, &new_value)
     }
 
 }

@@ -84,7 +84,7 @@
           };
 
         var data = [];
-        for (var i = 0; i <100; i++) {
+        for (var i = 0; i <2000000; i++) {
           data[i] = {
             title: "Task " + i,
             duration: "5 days",

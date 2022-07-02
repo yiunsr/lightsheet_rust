@@ -55,6 +55,12 @@ pub fn create_query_rowmeta(window_id:u32) -> String {
     query
 }
 
+// pub fn create_query_select_view(window_id:u32) -> String {
+//     let main_table = get_table_name(window_id, TableType::MainTable);
+//     let rowmeta_table = get_table_name(window_id, TableType::RowMeta);
+//     let mut query = String::from("CREATE TABLE `");
+// }
+
 pub fn drop_query(window_id:u32, table_type:TableType) -> String {
     let tablename = get_table_name(window_id, table_type);
     let mut query = String::from("Drop TABLE `");

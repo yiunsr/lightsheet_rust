@@ -190,7 +190,7 @@ pub fn get_rows(conn:&rusqlite::Connection, window_id:u32,
 	let blank1 = String::from("");
 	let blank2 = String::from("");
 	let blank3 = String::from("");
-	let where_q = "id >= ?1 and id <= ?2".to_string();
+	let where_q = "row_idx >= ?1 and row_idx <= ?2".to_string();
 	let sql = db_utils::select_query(window_id, col_len, where_q, blank2, blank3);
 	let mut stmt = conn.prepare(&sql).unwrap();
 	let mut data_dict:HashMap<String, Value> = HashMap::new();
@@ -217,6 +217,8 @@ pub fn get_rows(conn:&rusqlite::Connection, window_id:u32,
 pub fn add_rows(conn:&mut Connection, window_id:u32, row_idx:u32, 
 	row_add_count:u32, row_len:u32, col_len:u32)
 {
+	println!("== add_rows ==");
+	println!("add_rows({}, {}, {})",row_idx, row_add_count, row_len);
 	let tx = conn.transaction().unwrap();
 	{
 		let c_sql = db_utils::move_for_add_rows_query_rowmeta(window_id, row_idx, row_add_count) ;
@@ -237,28 +239,37 @@ pub fn add_rows(conn:&mut Connection, window_id:u32, row_idx:u32,
 		for row_i in 0..row_add_count{
 			i_stmt.raw_bind_parameter(1 as usize, (row_len + row_i + 1) as i32).unwrap();
 			i_stmt.raw_bind_parameter(2 as usize, (row_idx + row_i) as i32).unwrap();
+			println!("{}, {}", row_len + row_i + 1, row_idx + row_i);
 			let _= i_stmt.raw_execute();
 		}
 	}
 	tx.commit().unwrap();
 }
 
-pub fn cell_edit(conn:&mut Connection, table_name:&String,
+pub fn cell_edit(conn:&mut Connection, window_id:u32,
 	row_id:u32, col_index:u32, old_value:&String, new_value:&String) -> bool
 {
+	let main_table = db_utils::get_table_name(window_id, db_utils::TableType::MainTable);
+	let meta_table = db_utils::get_table_name(window_id, db_utils::TableType::RowMeta);
 	let re = Regex::new("[\"]").unwrap();
 	let double_quoted_new_value = re.replace_all(new_value, "\"\"");
 
 	let col_name = &db_utils::colname(col_index).to_owned();
 	let mut query = String::from("UPDATE ");
-	query.push_str(&table_name);
+	query.push_str(&main_table);
 	query.push_str(" SET ");
 	query.push_str(col_name);
 	query.push_str(" = \"");
 	query.push_str(&double_quoted_new_value);
-	query.push_str("\" WHERE id = ");
+	query.push_str("\" WHERE id IN (");
+
+	query.push_str("SELECT row_meta_id FROM ");
+	query.push_str(&meta_table);
+	query.push_str(" WHERE row_idx = ");
 	query.push_str(&row_id.to_string());
-	query.push_str(";");
+	query.push_str(");");
+	
+	println!("{}", query);
 
 	let tx = conn.transaction().unwrap();
 	tx.execute(&query, NO_PARAMS).unwrap();

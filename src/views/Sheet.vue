@@ -283,14 +283,17 @@
         switch(menuID){
           case "add_row_above":{
             let _this = this;
-            common.addRows(this.selCellRow+1, 1).then(function(){
+            // Bug in selCellRow, so fallback behavior
+            let active_row = parseInt($(".active.grid-row-hader").text());
+            common.addRows(active_row, 1).then(function(){
               _this.redrawView();
             });
             break;
           }
           case "add_row_below":{
             let _this = this;
-            common.addRows(this.selCellRow+2, 1).then(function(){
+            let active_row = parseInt($(".active.grid-row-hader").text());
+            common.addRows(active_row+1, 1).then(function(){
               _this.redrawView();
             });
             
