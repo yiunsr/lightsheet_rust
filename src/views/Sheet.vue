@@ -91,6 +91,9 @@
     mounted: function(){
       // debugger; // eslint-disable-line no-debugger
       this.init();
+      setTimeout(function(){
+        window.vm.$children[0].$data.menuinfo.file_export.disabled = false;
+    }, 100);
     },
     beforeDestroy() {
       window.removeEventListener('resize', this.resizeWindow);
@@ -140,7 +143,7 @@
             var vp = grid.getViewport();
             window.sheet.remoteModel.ensureData(vp.top, vp.bottom);
           }
-          var onScroll = window._.debounce(onViewportChanged, 250);
+          var onScroll = window._.debounce(onViewportChanged, 300);
           grid.onViewportChanged.subscribe(function(){
             // debugger; // eslint-disable-line no-debugger
             $(".slick-cell.r" + _this.selCellCol).addClass("col-active");

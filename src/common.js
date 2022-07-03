@@ -38,10 +38,9 @@ export default {
     });
   },
   openURL(url){
-    window.__TAURI_INVOKE_HANDLER__({
-      cmd: 'open',
-      uri: url
-    });
+    window.invoke(
+      'open', {uri: url}
+    );
   },
   fileOpen(path, cb){
     return window.__TAURI__.invoke(
@@ -51,6 +50,11 @@ export default {
   fileOpenDialog(){
     return window.__TAURI__.invoke(
       'file_open_dialog', {}
+    );
+  },
+  fileExport(path, cb){
+    return window.__TAURI__.invoke(
+      'file_export', {path: path, cb:cb}
     );
   },
   getTableInfo(cb){

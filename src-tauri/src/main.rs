@@ -118,6 +118,33 @@ async fn file_open(window: Window, path: String, cb: String){
 }
 
 #[command]
+async fn file_export(window: Window, path: String, cb: String){
+  let window_id = get_window_id(&window);
+  let now = Instant::now();
+  println!("{}", path);
+  let rfc_wv = RefCell::new(window);
+  let arc_rfc_wv0 = Arc::new(rfc_wv);
+  let arc_rfc_wv1 = arc_rfc_wv0.clone();
+  let table_manager = get_table_manager();
+  table_manager.export_file(1u32, path.to_string(), move |percent:u32| -> () {
+    println!("{}", percent);
+    let js1 = format!("common.progress_dialog_percent({})", percent);
+    let aref0 = arc_rfc_wv0.borrow_mut();
+    let _ = aref0.eval(&js1); 
+  });
+  let rowlen = table_manager.get_row_len(window_id);
+  
+  let js2 = format!("common.hide_progress_dialog()");
+  let aref1 = arc_rfc_wv1.borrow_mut();
+  let _ = aref1.eval(&js2);
+  let js3 = format!("{}();", cb);
+  let _ = aref1.eval(&js3);
+  let spendtime = now.elapsed().as_secs_f64();
+  let js4 = format!("common.log('==== spendtime : {} ====');", spendtime);
+  let _ = aref1.eval(&js4);
+}
+
+#[command]
 fn set_title(window: Window, title: String){
   let _ = window.set_title(&title);
 }
@@ -178,9 +205,9 @@ fn main() {
   }
   let context = tauri::generate_context!("./tauri.conf.json");
   let _ = tauri::Builder::default()
-    .menu(tauri::Menu::os_default(&context.package_info().name))
+    //.menu(tauri::Menu::os_default(&context.package_info().name))
     .invoke_handler(tauri::generate_handler![
       alert, confirm, prompt, file_open_dialog, file_open, set_title, get_label,
-      get_table_info, get_rows, add_rows, cell_edit_done
+      get_table_info, get_rows, add_rows, cell_edit_done, file_export
     ]).run(context);
 }

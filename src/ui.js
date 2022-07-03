@@ -1,3 +1,4 @@
+import { save } from '@tauri-apps/api/dialog';
 import common from './common.js'
 
 // debugger; // eslint-disable-line no-debugger
@@ -35,6 +36,25 @@ export default {
       window.vm.$router.push({ path: 'sheet', query: { path: _filepath }});
       if(path)  // if already page open, reload page(because of mounted event not work)
         window.vm.$router.go()
+    }, 10);
+  },
+  fileExport(){
+    const title = window.vm.$t("menu.file_export_dialog_title");
+    save({title: title, filters:
+      [
+        {name: 'csv', extensions: ['csv']}, {name: 'txt file', extensions: ['txt']}
+      ]
+    }).then(function(filepath){
+      if(filepath === null)
+        return;
+      debugger;  // eslint-disable-line no-debugger
+      common.show_progress_dialog("File Exporing...");
+      common.fileExport(filepath, "ui._fileExportEnd");
+    });
+  },
+  _fileExportEnd(){
+    setTimeout(function(){
+      
     }, 10);
   },
 }

@@ -6,6 +6,8 @@
     "file_open": "열기",
     "file_close_before_open": "새파일을 열기전에 기존 파일을 닫아야 합니다. 열린 파일을 닫겠습니까?",
     "file_save": "저장",
+    "file_export": "내보내기",
+    "file_export_dialog_title": "내보내기",
     "file_exit": "끝내기",
 
     "edit": "편집",

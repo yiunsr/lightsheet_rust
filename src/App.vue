@@ -10,7 +10,7 @@
       <v-toolbar-title style="width:36px;text-align:center" 
         class="font-weight-black rounded secondary ">LS</v-toolbar-title>
 
-      <AppMenu height="36px" />
+      <AppMenu :menu-info="menuinfo" />
       <v-spacer></v-spacer>
       <v-btn
         href="#" onclick="location.reload();"
@@ -147,6 +147,9 @@ export default {
   data: () => ({
     progress_dialog: false, progress_percent: 0, progress_dialog_title: "",
     statusbar: "",
+    menuinfo: {
+      file_export: {disabled: true}
+    },
     //
   }),
   computed:{

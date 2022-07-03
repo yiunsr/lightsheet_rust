@@ -73,6 +73,18 @@ impl TableManager {
         });
     }
 
+    pub fn export_file<F>(&mut self, window_id:u32, filepath:String, cb:F)
+        where F: Fn(u32) -> ()
+    {
+        let table_info = self.table_hm.get(&window_id).unwrap();
+        let row_len = table_info.row_len;
+        let col_len = table_info.col_len;
+
+        let conn = self.conn.as_mut().unwrap();
+        csv_reader::export_file(
+            conn, window_id, row_len, col_len,  filepath, cb);
+    }
+
     pub fn get_temp_file_fath() -> String{
         "./tmp.db".to_string()
     }

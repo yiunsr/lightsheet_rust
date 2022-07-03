@@ -15,6 +15,10 @@
       "all": true,
       "window": {
         "create": true
+      },
+      "dialog": {
+        "all": true,
+        "save": true
       }
     },
     "bundle": {

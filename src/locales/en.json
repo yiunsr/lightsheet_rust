@@ -7,6 +7,8 @@
     "file_close_before_open": "You must close an existing file before opening a new one. Are you sure you want to close the open file?",
     "file_open__sb": "open csv, txt files",
     "file_save": "Save",
+    "file_export": "Export",
+    "file_export_dialog_title": "Export",
     "file_exit": "Exit",
 
     "edit": "Edit",

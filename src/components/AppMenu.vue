@@ -117,15 +117,20 @@ Vue.component("v-style", {
 });
 export default {
   components: { VueFileToolbarMenu },
+  props: {
+   menuInfo: Object,
+ },
+
   data () {
+    
     return {
       color: "rgb(74, 238, 164)",
       font: "Avenir",
       theme: "default",
-      edit_mode: true,
+      edit_mode: false,
       check1: false,
       check2: false,
-      check3: true
+      check3: true,
     }
   },
   computed: {
@@ -133,8 +138,12 @@ export default {
       Vue.prototype
       return 0;
     },
+    is_file_exort(){
+      return !this.menuInfo.file_export.disabled;
+    },
     // Read the API documentation about the available menu content options
     bars_content () {
+      // debugger;  // eslint-disable-line no-debugger
       return [
         [
           {
@@ -151,9 +160,19 @@ export default {
               },
               { 
                 text: this.$t("menu.file_save") + "...", 
-                click: () => alert("You're amazing, "+(prompt("What's your name?")||"friend")+"!") ,
+                click: () => { 
+                  ui.fileOpen();
+                },
                 disabled: true,
               },
+              { 
+                text: this.$t("menu.file_export") + "...", 
+                click: () => { 
+                  ui.fileExport();
+                },
+                disabled: !this.is_file_exort,
+              },
+              
               { is: "separator" },
               { text: this.$t("menu.file_exit"), click () { common.callAPI("exit") } },
             ]

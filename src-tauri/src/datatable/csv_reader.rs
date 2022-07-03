@@ -9,6 +9,8 @@ use std::str;
 use std::boxed::Box;
 use std::convert::TryFrom;
 use std::sync::Arc;
+use std::borrow::Borrow;
+use csv::Writer;
 use log;
 use chardetng::EncodingDetector;
 use rusqlite::Connection;
@@ -182,6 +184,44 @@ pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, window_id:u32, 
 	};
 	
 	Ok(table_info)
+}
+
+pub fn export_file<'conn, F>(conn:&mut Connection, window_id:u32, row_len:u32, col_len: u32, csvfile: String, cb:F) 
+		where F: Fn(u32) -> ()
+{
+	let mut wtr = Writer::from_path(csvfile).unwrap();
+
+	let blank1 = String::from("");
+	let blank2 = String::from("");
+	let blank3 = String::from("");
+	let where_q = "row_idx >= ?1 and row_idx <= ?2".to_string();
+	let sql = db_utils::select_query(window_id, col_len, where_q, blank2, blank3);
+	let mut stmt = conn.prepare(&sql).unwrap();
+
+	let mut rows = stmt.query(params![0u32, 2_000_000_000u32]).unwrap();
+
+	let mut old_percent = 0u32;
+	while let Some(row) = rows.next().unwrap() {
+		let id_:u32 = row.get(0 as usize).unwrap();
+		let mut row_slice:Vec<String> = Vec::<String>::with_capacity(1000);
+        for i in 1..col_len+1{
+			let value:String = row.get_unwrap(i as usize);
+			row_slice.push(value);
+		}
+		wtr.write_record(row_slice).unwrap();
+		
+		let cur_percent:u32 = u32::try_from(id_ as u64 * 100 / row_len as u64 ).unwrap();
+		if cur_percent != old_percent {
+			if cur_percent < 100{
+				cb(cur_percent);
+			}
+			else if cur_percent == 100{
+				cb(cur_percent);
+			}
+		}
+		old_percent = cur_percent;
+    }
+	wtr.flush().unwrap();
 }
 
 pub fn get_rows(conn:&rusqlite::Connection, window_id:u32, 
