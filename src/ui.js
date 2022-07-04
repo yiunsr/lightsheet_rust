@@ -47,14 +47,13 @@ export default {
     }).then(function(filepath){
       if(filepath === null)
         return;
-      debugger;  // eslint-disable-line no-debugger
+      // debugger;  // eslint-disable-line no-debugger
       common.show_progress_dialog("File Exporing...");
       common.fileExport(filepath, "ui._fileExportEnd");
     });
   },
   _fileExportEnd(){
     setTimeout(function(){
-      
     }, 10);
   },
 }

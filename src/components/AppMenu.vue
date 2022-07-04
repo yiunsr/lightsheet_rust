@@ -124,6 +124,7 @@ export default {
   data () {
     
     return {
+      compile_mode: window.__COMPILE_MODE__,
       color: "rgb(74, 238, 164)",
       font: "Avenir",
       theme: "default",
@@ -144,192 +145,203 @@ export default {
     // Read the API documentation about the available menu content options
     bars_content () {
       // debugger;  // eslint-disable-line no-debugger
-      return [
-        [
-          {
-            text: this.$t("menu.file"),
-            menu: [
-              { 
-                text: this.$t("menu.file_open") + "...", 
-                hotkey: this.isMacLike ? "command+o" : "ctrl+o",
-                click: () => { 
-                  ui.fileOpen();
-                },
-                id: "menu__file_open",
-                title: this.$t("menu.file_open__sb"),
-              },
-              { 
-                text: this.$t("menu.file_save") + "...", 
-                click: () => { 
-                  ui.fileOpen();
-                },
-                disabled: true,
-              },
-              { 
-                text: this.$t("menu.file_export") + "...", 
-                click: () => { 
-                  ui.fileExport();
-                },
-                disabled: !this.is_file_exort,
-              },
-              
-              { is: "separator" },
-              { text: this.$t("menu.file_exit"), click () { common.callAPI("exit") } },
-            ]
+      const menu_file = {
+        text: this.$t("menu.file"),
+        menu: [
+          { 
+            text: this.$t("menu.file_open") + "...", 
+            hotkey: this.isMacLike ? "command+o" : "ctrl+o",
+            click: () => { 
+              ui.fileOpen();
+            },
+            id: "menu__file_open",
+            title: this.$t("menu.file_open__sb"),
           },
-          {
-            text: this.$t("menu.edit"),
-            menu: [
-              { text: this.$t("menu.edit_cut"), click: () => document.execCommand("cut") },
-              { text: this.$t("menu.edit_copy"), click: () => document.execCommand("copy") },
-              { text: this.$t("menu.edit_paste"), click () { navigator.clipboard.readText().then(text => { document.execCommand("insertText", false, text) }) } }
-            ]
+          { 
+            text: this.$t("menu.file_save") + "...", 
+            click: () => { 
+              ui.fileOpen();
+            },
+            disabled: true,
           },
+          { 
+            text: this.$t("menu.file_export") + "...", 
+            click: () => { 
+              ui.fileExport();
+            },
+            disabled: !this.is_file_exort,
+          },
+          
+          { is: "separator" },
+          { text: this.$t("menu.file_exit"), click () { common.callAPI("exit") } },
+        ]
+      };
+
+      const menu_edit = {
+        text: this.$t("menu.edit"),
+        menu: [
+          { text: this.$t("menu.edit_cut"), click: () => document.execCommand("cut") },
+          { text: this.$t("menu.edit_copy"), click: () => document.execCommand("copy") },
+          { text: this.$t("menu.edit_paste"), click () { navigator.clipboard.readText().then(text => { document.execCommand("insertText", false, text) }) } }
+        ]
+      };
+
+      const menu_format = {
+        text: "Formats",
+        menu: [
+          { text: "Basic" },
+          { text: "Disabled", disabled: true },
           {
-            text: "Formats",
+            text: "Sub-menus",
+            custom_chevron: this.theme != "default" ? "►" : false,
             menu: [
-              { text: "Basic" },
-              { text: "Disabled", disabled: true },
+              { text: "Hello!" },
               {
-                text: "Sub-menus",
+                text: "I'm a sub-menu",
                 custom_chevron: this.theme != "default" ? "►" : false,
                 menu: [
-                  { text: "Hello!" },
-                  {
-                    text: "I'm a sub-menu",
-                    custom_chevron: this.theme != "default" ? "►" : false,
-                    menu: [
-                      { text: "And I'm another sub-menu!" },
-                    ],
-                    menu_width: 240
-                  }
+                  { text: "And I'm another sub-menu!" },
                 ],
-                menu_width: 200
-              },
-              {
-                text: "Hotkey",
-                hotkey: this.isMacLike ? "command+e" : "ctrl+e",
-                click () {
-                  alert("Hotkey menu triggered either via clicking or shortcut.");
-                }
-              },
-              { text: "Material icon", icon: "shopping_cart", click: () => window.open("https://material.io/resources/icons", "_blank") },
-              { text: "Platform emoji", emoji: "call_me_hand", click: () => window.open("https://raw.githubusercontent.com/omnidan/node-emoji/master/lib/emoji.json", "_blank") },
-              { text: "Menu text is wrapped when it is too long" },
-              { is: "separator" },
-              {
-                text: "Option 1",
-                icon: this.check1 ? "radio_button_unchecked" : "radio_button_checked",
-                click: (e) => {
-                  e.stopPropagation(); // prevent menu close when clicking
-                  this.check1 = false;
-                }
-              },
-              {
-                text: "Option 2",
-                icon: this.check1 ? "radio_button_checked" : "radio_button_unchecked",
-                click: (e) => {
-                  e.stopPropagation(); // prevent menu close when clicking
-                  this.check1 = true;
-                }
-              },
-              { is: "separator" },
-              {
-                text: "Option 3",
-                icon: this.check2 ? "check_box" : "check_box_outline_blank",
-                click: (e) => {
-                  e.stopPropagation(); // prevent menu close when clicking
-                  this.check2 = !this.check2;
-                }
-              },
-              {
-                text: "Option 4",
-                icon: this.check3 ? "check_box" : "check_box_outline_blank",
-                click: (e) => {
-                  e.stopPropagation(); // prevent menu close when clicking
-                  this.check3 = !this.check3;
-                }
+                menu_width: 240
               }
             ],
-            menu_width: 220
+            menu_width: 200
           },
           {
-            text: this.$t("menu.help"),
-            menu: [
-              { text: this.$t("menu.help_about"), icon: "help", 
-                click: () => {
-                  alert("lightsheet_rust\nhttps://github.com/yiunsr/lightsheet_rust\nby Yiun Seungryong");
-                }
-              },
-              { is: "separator" },
-              { text: "Repository", icon: "exit_to_app",
-               click: () => {
-                 common.openURL("https://github.com/yiunsr/lightsheet_rust")
-               }
-              },
-            ],
-            menu_width: 220
+            text: "Hotkey",
+            hotkey: this.isMacLike ? "command+e" : "ctrl+e",
+            click () {
+              alert("Hotkey menu triggered either via clicking or shortcut.");
+            }
+          },
+          { text: "Material icon", icon: "shopping_cart", click: () => window.open("https://material.io/resources/icons", "_blank") },
+          { text: "Platform emoji", emoji: "call_me_hand", click: () => window.open("https://raw.githubusercontent.com/omnidan/node-emoji/master/lib/emoji.json", "_blank") },
+          { text: "Menu text is wrapped when it is too long" },
+          { is: "separator" },
+          {
+            text: "Option 1",
+            icon: this.check1 ? "radio_button_unchecked" : "radio_button_checked",
+            click: (e) => {
+              e.stopPropagation(); // prevent menu close when clicking
+              this.check1 = false;
+            }
           },
           {
-            text: "Debug",
-            menu: [
-              { text: "Title test", click:() =>  {
-                  // debugger;  // eslint-disable-line no-debugger
-                  common.setTitle("setTitle (한국어)") 
-                }
-              },
-              { text: "Alert test", click:() =>  alert("Alert Test (한국어)") },
-              { text: "confirm test", click:() =>  {
-                window.__menu__confirm_test = function(result){
-                  alert(""+result);
-                };
-                common.confirm("Confirm Test(한국어)", "__menu__confirm_test", "입력");
-              }},
-              { text: "File Open Dialog", click:() =>  {
-                window.__menu__fileopendialog_test = function(result){
-                  alert(""+result);
-                };
-                common.fileOpenDialog("__menu__fileopendialog_test");
-              }},
-              { text: "Prompt test", click:() =>   {
-                window.__menu__prompt_test = function(result){
-                  alert(""+result);
-                };
-                common.prompt("Prompt test", "__menu__prompt_test");
-              }},
-              { text: "Change Status", click:() =>   {
-                common.setStatusbar("statusbar 설정");
-              }},
-              { text: "Menu label", click:() =>   {
-                common.getLabel();
-              }},
-              { is: "separator" },
-              { text: "home", click:() =>  {
-                router.push({ path: '/' })
-                }
-              },
-              { text: "sheettest", click:() =>  {
-                router.push({ path: '/sheettest' })
-                }
-              },
-              { text: "sheettest2", click:() =>  {
-                router.push({ path: '/sheettest2' })
-                }
-              },
-              { text: "sheettest3", click:() =>  {
-                router.push({ path: '/sheettest3' })
-                }
-              },
-              { text: "history back", click:() =>  {
-                router.go(-1);
-                }
-              },
-
-            ]
+            text: "Option 2",
+            icon: this.check1 ? "radio_button_checked" : "radio_button_unchecked",
+            click: (e) => {
+              e.stopPropagation(); // prevent menu close when clicking
+              this.check1 = true;
+            }
           },
-          { is: "spacer" },
+          { is: "separator" },
+          {
+            text: "Option 3",
+            icon: this.check2 ? "check_box" : "check_box_outline_blank",
+            click: (e) => {
+              e.stopPropagation(); // prevent menu close when clicking
+              this.check2 = !this.check2;
+            }
+          },
+          {
+            text: "Option 4",
+            icon: this.check3 ? "check_box" : "check_box_outline_blank",
+            click: (e) => {
+              e.stopPropagation(); // prevent menu close when clicking
+              this.check3 = !this.check3;
+            }
+          }
         ],
-      ]
+        menu_width: 220
+      };
+
+      const menu_help = {
+        text: this.$t("menu.help"),
+        menu: [
+          { text: this.$t("menu.help_about"), icon: "help", 
+            click: () => {
+              alert("lightsheet_rust\nhttps://github.com/yiunsr/lightsheet_rust\nby Yiun Seungryong");
+            }
+          },
+          { is: "separator" },
+          { text: "Repository", icon: "exit_to_app",
+            click: () => {
+              common.openURL("https://github.com/yiunsr/lightsheet_rust")
+            }
+          },
+        ],
+        menu_width: 220
+      };
+
+      const menu_debug =  {
+        text: "Debug",
+        menu: [
+          { text: "Title test", click:() =>  {
+              // debugger;  // eslint-disable-line no-debugger
+              common.setTitle("setTitle (한국어)") 
+            }
+          },
+          { text: "Alert test", click:() =>  alert("Alert Test (한국어)") },
+          { text: "confirm test", click:() =>  {
+            window.__menu__confirm_test = function(result){
+              alert(""+result);
+            };
+            common.confirm("Confirm Test(한국어)", "__menu__confirm_test", "입력");
+          }},
+          { text: "File Open Dialog", click:() =>  {
+            window.__menu__fileopendialog_test = function(result){
+              alert(""+result);
+            };
+            common.fileOpenDialog("__menu__fileopendialog_test");
+          }},
+          { text: "Prompt test", click:() =>   {
+            window.__menu__prompt_test = function(result){
+              alert(""+result);
+            };
+            common.prompt("Prompt test", "__menu__prompt_test");
+          }},
+          { text: "Change Status", click:() =>   {
+            common.setStatusbar("statusbar 설정");
+          }},
+          { text: "Menu label", click:() =>   {
+            common.getLabel();
+          }},
+          { is: "separator" },
+          { text: "home", click:() =>  {
+            router.push({ path: '/' })
+            }
+          },
+          { text: "sheettest", click:() =>  {
+            router.push({ path: '/sheettest' })
+            }
+          },
+          { text: "sheettest2", click:() =>  {
+            router.push({ path: '/sheettest2' })
+            }
+          },
+          { text: "sheettest3", click:() =>  {
+            router.push({ path: '/sheettest3' })
+            }
+          },
+          { text: "history back", click:() =>  {
+            router.go(-1);
+            }
+          },
+
+        ]
+      };
+  
+      let menu = [];
+      menu.push(menu_file);
+      menu.push(menu_edit);
+      console.log(" == this.compile_mode ==" + this.compile_mode);
+      if(this.compile_mode == "debug"){
+        menu.push(menu_format);
+        menu.push(menu_debug);
+      }
+      menu.push(menu_help);
+      menu.push( { is: "spacer" });
+      return [menu];
     },
     isMacLike: () => /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform),
   },

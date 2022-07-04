@@ -3,6 +3,7 @@
   windows_subsystem = "windows"
 )]
 use tauri::{self, Window, generate_context, window};
+use tauri::{plugin::{Builder, TauriPlugin}, Runtime};
 use tauri::command;
 
 use std::fmt::format;
@@ -11,6 +12,7 @@ use std::cell::RefCell;
 use std::time::Instant;
 
 use serde_json::{self, Value};
+use webbrowser;
 use tinyfiledialogs as tfd;
 
 mod datatable;
@@ -150,6 +152,12 @@ fn set_title(window: Window, title: String){
 }
 
 #[command]
+fn open_default_browser_url(url: String){
+  let _ = webbrowser::open(&url);
+}
+
+
+#[command]
 async fn get_table_info(window: Window) -> Result<Value, APIError>{
   let table_manager = get_table_manager();
   let window_id = get_window_id(&window);
@@ -198,16 +206,36 @@ async fn cell_edit_done(window: Window, row_id: u32, col_index: u32, old_value: 
   Ok(v)
 }
 
+
 fn main() {
   let manager = manager::TableManager::new();
   unsafe{
     TABLE_MANAGER_WRAP = Some(manager);
   }
+
   let context = tauri::generate_context!("./tauri.conf.json");
-  let _ = tauri::Builder::default()
+  let app = tauri::Builder::default().plugin(init())
     //.menu(tauri::Menu::os_default(&context.package_info().name))
     .invoke_handler(tauri::generate_handler![
       alert, confirm, prompt, file_open_dialog, file_open, set_title, get_label,
-      get_table_info, get_rows, add_rows, cell_edit_done, file_export
-    ]).run(context);
+      get_table_info, get_rows, add_rows, cell_edit_done, file_export,
+      open_default_browser_url
+    ]);
+  let _ = app.run(context);
+}
+
+#[cfg(debug_assertions)]
+const INIT_SCRIPT: &str = r#"
+  window.__COMPILE_MODE__  = "debug";
+"#;
+
+#[cfg(not(debug_assertions))]
+const INIT_SCRIPT: &str = r#"
+  window.__COMPILE_MODE__ =  "release";
+"#;
+
+fn init<R: Runtime>() -> TauriPlugin<R> {
+  Builder::new("example")
+    .js_init_script(INIT_SCRIPT.to_string())
+    .build()
 }

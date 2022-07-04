@@ -26,6 +26,7 @@ tinyfiledialogs = "3.3.10"
 lazy_static = "1.4.0"
 dashmap = "4.0.2"
 regex = "1.5.5"
+webbrowser = "0.7.1"
 
   [dependencies.rusqlite]
   version = "0.24.2"

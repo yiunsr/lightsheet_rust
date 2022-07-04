@@ -38,8 +38,8 @@ export default {
     });
   },
   openURL(url){
-    window.invoke(
-      'open', {uri: url}
+    window.__TAURI__.invoke(
+      'open_default_browser_url', {url: url}
     );
   },
   fileOpen(path, cb){
