@@ -61,9 +61,22 @@ pub fn create_query_rowmeta(window_id:u32) -> String {
 //     let mut query = String::from("CREATE TABLE `");
 // }
 
+// pub fn add_col_query(window_id:u32, table_type:TableType, col_len: u32, add_col_len: i32) -> String {
+//     let tablename = get_table_name(window_id, table_type);
+//     let mut query = String::from("ALTER TABLE `");
+//     query.push_str(&tablename);
+//     query.push_str("` ");
+
+//     for i in 0..add_col_len-1 {
+//     query.push_str(" ADD COLUMN column_definition,    ");
+    
+//     log::info!("add_col_query : {}", query);
+// 	query
+// }
+
 pub fn drop_query(window_id:u32, table_type:TableType) -> String {
     let tablename = get_table_name(window_id, table_type);
-    let mut query = String::from("Drop TABLE `");
+    let mut query = String::from("Drop TABLE IF EXISTS `");
     query.push_str(&tablename);
     query.push_str("`;");
     log::info!("drop_query : {}", query);

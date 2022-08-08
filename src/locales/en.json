@@ -3,9 +3,13 @@
   "menu": {
     "file": "File",
     "file_new": "New",
+    "file_new_title": "Create a new ls.db file.",
+    "file_close": "Close",
+    "file_close_before_new": "Existing files must be closed before creating new ones. Are you sure you want to close the open file?",
     "file_open": "Open",
-    "file_close_before_open": "You must close an existing file before opening a new one. Are you sure you want to close the open file?",
-    "file_open__sb": "open csv, txt files",
+    "file_import": "Import",
+    "file_close_before_import": "Importing a file will delete any existing data. Are you sure you want to delete the current data and import the file?",
+    "file_open_title": "open csv, txt files",
     "file_save": "Save",
     "file_export": "Export",
     "file_export_dialog_title": "Export",
@@ -19,8 +23,27 @@
     "help": "Help",
     "help_about": "About"
   },
+  "dialog_import": {
+    "header": "Import Option",
+    "filepath_tooltip": "Use the file selection file dialog.",
+    "col_sep_label": "column separator",
+    "chacter_encoding": "chacter encoding",
+    "decoded_text": "decoded text(preview)",
+    "close_btn": "Close",
+    "import_btn": "Import",
+    "import_start_cell": "Where to import data"
+  },
+  "auto_complete_ediable": {
+    "col_sep_header": "Select an option or create one"
+  },
   "context_menu": {
     "add_row_above": "Add row above",
-    "add_row_below": "Add row below"
+    "add_row_below": "Add row below",
+    "add_col_left": "add column to the left",
+    "add_col_right": "add column to the right"
+  },
+  "form_validation": {
+    "required": "Required.",
+    "col_sep_check": "You can enter a tab or a single character (ASCII)."
   }
 }

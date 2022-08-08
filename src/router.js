@@ -1,5 +1,6 @@
 import VueRouter from 'vue-router'
 import StartPage from './views/StartPage';
+import NewPage from './views/NewPage';
 import Sheet from './views/Sheet';
 import SheetTest from './views/SheetTest';
 import SheetTest2 from './views/SheetTest2';
@@ -10,6 +11,11 @@ const routes = [
     path: '/',
     name: 'startpage',
     component: StartPage
+  },
+  {
+    path: '/new',
+    name: 'newpage',
+    component: NewPage
   },
   {
     path: '/sheet',

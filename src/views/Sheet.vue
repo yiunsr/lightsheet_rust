@@ -6,7 +6,7 @@
   padding-top: 2px;
 }
 
-.slick-cell.col-active{
+.col-active{
   background: #d4e7ff;
 }
 /* .slick-viewport-left{
@@ -35,15 +35,24 @@
     ></div>
 
      <v-menu
-      v-model="showContextMenu"
+      v-model="statusContextMenu"
       absolute
       :position-x="contextMenuLeft"
       :position-y="contextMenuTop"
     >
 
-      <v-list dense>
+      <v-list dense v-show="showRowContextMenu">
         <v-list-item
           v-for="(item, index) in rowContextMenuItems" @click="selectMenu(item.menuID)"
+          :key="'row' + index"
+        >
+          <v-list-item-title>{{ $i18n.t("context_menu." + item.title ) }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+
+      <v-list dense v-show="showColContextMenu">
+        <v-list-item
+          v-for="(item, index) in colContextMenuItems" @click="selectMenu(item.menuID)"
           :key="'row' + index"
         >
           <v-list-item-title>{{ $i18n.t("context_menu." + item.title ) }}</v-list-item-title>
@@ -78,11 +87,15 @@
         return {
           row_len: 0, col_len: 0, colnames:[], remoteModel: {}, grid: {},
           mouseClickedCell: null,
-          showContextMenu: false, contextMenuTop: 0, contextMenuLeft: 0,
-          showRowContextMenu: false,
+          statusContextMenu: false, contextMenuTop: 0, contextMenuLeft: 0,
+          showRowContextMenu: false, showColContextMenu: false,
           rowContextMenuItems: [
             { title: 'add_row_above',  menuID: 'add_row_above'},
             { title: 'add_row_below',  menuID: 'add_row_below' },
+          ],
+          colContextMenuItems: [
+            { title: 'add_col_left',  menuID: 'add_col_left'},
+            { title: 'add_col_right',  menuID: 'add_col_right' },
           ],
           
           selCellCol: -1, selCellRow: -1,
@@ -90,10 +103,12 @@
     },
     mounted: function(){
       // debugger; // eslint-disable-line no-debugger
+      let this_ = this;
       this.init();
       setTimeout(function(){
-        window.vm.$children[0].$data.menuinfo.file_export.disabled = false;
-    }, 100);
+        let urlinfo = new URL(document.location.href);
+        this_.$store.commit('setPath', urlinfo.pathname);
+      }, 100);
     },
     beforeDestroy() {
       window.removeEventListener('resize', this.resizeWindow);
@@ -159,9 +174,9 @@
             grid.render();
             $(".slick-cell.r" + _this.selCellCol).addClass("col-active");
           });
-          remoteModel.onDataLoading.subscribe(function () {
-            $(".slick-cell.r" + _this.selCellCol).addClass("col-active");
-          });
+          // remoteModel.onDataLoading.subscribe(function () {
+          //   $(".slick-cell.r" + _this.selCellCol).addClass("col-active");
+          // });
           // load the first page
           grid.onViewportChanged.notify();
           window.addEventListener('resize', _this.resizeWindow);
@@ -176,8 +191,7 @@
             _this.contextMenuTop = e.pageY;
             _this.contextMenuLeft = e.pageX;
             if(cell.cell == 0){
-              _this.showContextMenu = true;
-              _this.showRowContextMenu = true;
+              _this.showContextMenu("row");
             }
           });
 
@@ -186,10 +200,19 @@
             console.log(colID);
           });
           grid.onHeaderContextMenu.subscribe(function(e, args) {
-            // debugger; // eslint-disable-line no-debugger
+            e.preventDefault();
+
+            _this.contextMenuTop = e.pageY;
+            _this.contextMenuLeft = e.pageX;
+            _this.showContextMenu("col");
+            
+            //debugger; // eslint-disable-line no-debugger
             let colID = args.column.id;
             let colIdx = util_grid.getColIndx(colID)
             console.log(colIdx);
+            let $hader_col = $($(".slick-header-columns .slick-header-column")[colIdx]);
+            $(".col-active").removeClass("col-active");
+            $hader_col.addClass("col-active");
           });
           grid.onActiveCellChanged.subscribe(function(e, args) {
             // debugger; // eslint-disable-line no-debugger
@@ -206,8 +229,7 @@
         }
 
         $("body").one("click", function () {
-          _this.showContextMenu = false;
-          _this.showRowContextMenu = false;
+          _this.hideContextMenu();
         });
         var common = window.common;
         common.getTableInfo().then(function(res){
@@ -299,13 +321,32 @@
             common.addRows(active_row+1, 1).then(function(){
               _this.redrawView();
             });
-            
+            break;
+          }
+          case 'add_col_right': {
+            //let active_row = parseInt($(".active.grid-row-hader").text());
+            break;
+          }
+          case 'add_col_left': {
             break;
           }
           
         }
         window.sheet.remoteModel.data.length += 1;
       },
+      hideContextMenu(){
+        this.statusContextMenu = false;
+        this.showRowContextMenu = false;
+        this.showColContextMenu = false;
+      },
+      showContextMenu(menu_type){
+        this.hideContextMenu();
+        this.statusContextMenu = true;
+        switch(menu_type){
+          case 'row': this.showRowContextMenu = true; break;
+          case 'col': this.showColContextMenu = true; break;
+        }
+      }
     },
     created : function(){
     }

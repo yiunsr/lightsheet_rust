@@ -1,28 +1,28 @@
 use std::io::Seek;
 use std::io::SeekFrom;
 use std::io::Read;
-use std::collections::HashMap;
 use std::error::Error;
+use std::fmt::Write;
+use base64::encode;
+
+
 use std::fs;
 use std::fs::File;
 use std::str;
 use std::boxed::Box;
 use std::convert::TryFrom;
-use std::sync::Arc;
-use std::borrow::Borrow;
+use serde_json::Value;
 use csv::Writer;
 use log;
 use chardetng::EncodingDetector;
 use rusqlite::Connection;
 use rusqlite::NO_PARAMS;
 use rusqlite::params;
-use serde_json::value::Value;
-use serde_json::Number;
+
 use unicode_bom::Bom;
-use regex::Regex;
 
 use super::db_utils;
-use super::table_info::TableInfo;
+use super::data_info::TableInfo;
 
 // // pub type Callback = fn(u32);
 // pub struct TableInfo {
@@ -57,6 +57,48 @@ pub fn get_col_count(readedstr:&str, sep:u8) -> u32 {
 	sep_count as u32 + 1
 }
 
+// https://stackoverflow.com/a/52992629/6652082
+fn encode_hex(bytes: &[u8]) -> String {
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for &b in bytes {
+        write!(&mut s, "{:02x}", b).unwrap();
+    }
+    s
+}
+
+pub fn get_file_info(csvfile: String) -> Value{
+	let file= &mut File::open(csvfile).unwrap();
+	//let file_pos = file.seek(SeekFrom::Current(0)).unwrap();
+	let total_file_byte = file.metadata().unwrap().len();
+	// let (mut reader, col_count) = csv_open(file)?;
+
+	let mut buffer = [0; 1024*10];
+
+	file.read(&mut buffer);
+	file.seek(SeekFrom::Start(0));
+	
+	// BOM Check
+	let bom: Bom = Bom::from(&buffer[0..4]);
+	if Bom::Utf8 == bom {
+		println!("Utf8");
+	}
+
+	let mut det = EncodingDetector::new();
+	det.feed(&buffer, true);
+	let enc = det.guess(None, true);
+	log::info!("file characterset detect: {}", enc.name());
+
+	let str_buffer = String::from_utf8_lossy(&buffer);
+	let sep = get_col_sep(&str_buffer);
+	let col_count = get_col_count(&str_buffer, sep);
+
+	let res_base64 = base64::encode(&buffer);
+	let res_json = format!(
+		r#"{{"result": {}, "sep": "{}", "enc": "{}",  "buffer": "{}" }}"#, 
+		true, sep  as char, enc.name(), res_base64);
+	println!("{}", res_json);
+	serde_json::from_str(&res_json).unwrap()
+}
 
 pub fn read_csv<'conn, F>(conn:&mut Connection, csvfile: String, window_id:u32, cb:F) 
 		->Result<TableInfo, Box<dyn Error>>
@@ -222,97 +264,4 @@ pub fn export_file<'conn, F>(conn:&mut Connection, window_id:u32, row_len:u32, c
 		old_percent = cur_percent;
     }
 	wtr.flush().unwrap();
-}
-
-pub fn get_rows(conn:&rusqlite::Connection, window_id:u32, 
-	col_len: u32, from: u32, to: u32) -> String
-{
-	let blank1 = String::from("");
-	let blank2 = String::from("");
-	let blank3 = String::from("");
-	let where_q = "row_idx >= ?1 and row_idx <= ?2".to_string();
-	let sql = db_utils::select_query(window_id, col_len, where_q, blank2, blank3);
-	let mut stmt = conn.prepare(&sql).unwrap();
-	let mut data_dict:HashMap<String, Value> = HashMap::new();
-	let mut row_slice:Vec<Value> = Vec::<Value>::with_capacity(100);
-	let mut rows = stmt.query(params![from, to]).unwrap();
-	while let Some(row) = rows.next().unwrap() {
-		let id_:u32 = row.get(0 as usize).unwrap();
-		let mut item:HashMap<String, Value> = HashMap::new();
-		item.entry(String::from("id")).or_insert(Value::Number(Number::from(id_)));
-		print!("{}", id_);
-        for i in 1..col_len+1{
-			let value = Value::String(row.get_unwrap(i as usize));
-			let colname = &db_utils::colname((i-1) as u32).to_owned();
-			item.entry(colname.to_string()).or_insert(value);
-		}
-		let rowinfo = serde_json::to_value(item).unwrap();
-		row_slice.push(rowinfo);
-    }
-	data_dict.entry(String::from("values")).or_insert(Value::Array(row_slice));
-	let json_str = serde_json::to_string(&data_dict).unwrap();
-	json_str
-}
-
-pub fn add_rows(conn:&mut Connection, window_id:u32, row_idx:u32, 
-	row_add_count:u32, row_len:u32, col_len:u32)
-{
-	println!("== add_rows ==");
-	println!("add_rows({}, {}, {})",row_idx, row_add_count, row_len);
-	let tx = conn.transaction().unwrap();
-	{
-		let c_sql = db_utils::move_for_add_rows_query_rowmeta(window_id, row_idx, row_add_count) ;
-		println!("{}", c_sql);
-		let _ = tx.execute(&c_sql, NO_PARAMS);
-	}
-	{
-		let c_sql_main = db_utils::insert_blank_query(window_id, col_len);
-		println!("{}", c_sql_main);
-		for row_i in 0..row_add_count{
-			let _ = tx.execute(&c_sql_main, NO_PARAMS);
-		}
-	}
-	{
-		let c_sql_row_meta = db_utils::insert_blank_query_rowmeta(window_id);
-		println!("{}", c_sql_row_meta);
-		let mut i_stmt = tx.prepare(&c_sql_row_meta).unwrap();
-		for row_i in 0..row_add_count{
-			i_stmt.raw_bind_parameter(1 as usize, (row_len + row_i + 1) as i32).unwrap();
-			i_stmt.raw_bind_parameter(2 as usize, (row_idx + row_i) as i32).unwrap();
-			println!("{}, {}", row_len + row_i + 1, row_idx + row_i);
-			let _= i_stmt.raw_execute();
-		}
-	}
-	tx.commit().unwrap();
-}
-
-pub fn cell_edit(conn:&mut Connection, window_id:u32,
-	row_id:u32, col_index:u32, old_value:&String, new_value:&String) -> bool
-{
-	let main_table = db_utils::get_table_name(window_id, db_utils::TableType::MainTable);
-	let meta_table = db_utils::get_table_name(window_id, db_utils::TableType::RowMeta);
-	let re = Regex::new("[\"]").unwrap();
-	let double_quoted_new_value = re.replace_all(new_value, "\"\"");
-
-	let col_name = &db_utils::colname(col_index).to_owned();
-	let mut query = String::from("UPDATE ");
-	query.push_str(&main_table);
-	query.push_str(" SET ");
-	query.push_str(col_name);
-	query.push_str(" = \"");
-	query.push_str(&double_quoted_new_value);
-	query.push_str("\" WHERE id IN (");
-
-	query.push_str("SELECT row_meta_id FROM ");
-	query.push_str(&meta_table);
-	query.push_str(" WHERE row_idx = ");
-	query.push_str(&row_id.to_string());
-	query.push_str(");");
-	
-	println!("{}", query);
-
-	let tx = conn.transaction().unwrap();
-	tx.execute(&query, NO_PARAMS).unwrap();
-	tx.commit().unwrap();
-	true
 }

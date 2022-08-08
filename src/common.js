@@ -42,6 +42,21 @@ export default {
       'open_default_browser_url', {url: url}
     );
   },
+  fileNew(path){
+    return window.__TAURI__.invoke(
+      'file_new', {path: path}
+    );
+  },
+  fileGetInfo(path){
+    return window.__TAURI__.invoke(
+      'file_get_info', {path: path}
+    );
+  },
+  fileClose(){
+    return window.__TAURI__.invoke(
+      'file_close', {}
+    );
+  },
   fileOpen(path, cb){
     return window.__TAURI__.invoke(
       'file_open', {path: path, cb:cb}

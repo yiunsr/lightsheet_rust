@@ -1,15 +1,80 @@
-import { save } from '@tauri-apps/api/dialog';
+import { open, save, confirm } from '@tauri-apps/api/dialog';
 import common from './common.js'
+import router from './router'
 
 // debugger; // eslint-disable-line no-debugger
 var _filepath;
 // url.searchParams.get("path")
 export default {
+  fileNew(){
+    let _this = this;
+    let path = new URL(window.location).searchParams.get("path");
+    if(path){
+      confirm(window.vm.$i18n.t("menu.file_close_before_new"), { title: 'LightSheet', type: 'warning' })
+        .then(function(result){
+          if(result){
+            _this._fileNewSaveDialog();
+          }
+        });
+    }
+    else{
+      _this._fileNewSaveDialog()
+    }
+  },
+  fileClose(){
+    common.fileClose().then(function(){
+      router.push({ path: '/' })
+    });
+  },
+  _fileNewSaveDialog(){
+    let path_ = '';
+    save({multiple: false, filters: [{name: 'lightsheet', extensions: ['ls.db']}]})
+    .then(function(path){
+      if(path){
+        path_ = path;
+        common.fileNew(path
+          ).then(function(){
+            router.push({ path: 'sheet', query: { path: path_ }});
+        });
+      }
+    });
+  },
+  fileImportUIDialog(){
+    window.vm.$store.commit('setDialogType', "import");
+  },
+  fileImportNativeDialog(){
+    return open({
+      multiple: false,
+      filters: [{
+        name: 'CSV or TXT',
+        extensions: ['csv', 'txt']
+      }]
+    })
+  },
+  fileImport(){
+    let _this = this;
+    let path = new URL(window.location).searchParams.get("path");
+    if(path){
+      confirm(window.vm.$i18n.t("menu.file_close_before_import"),  { title: 'LightSheet', type: 'warning' })
+        .then(function(result){
+          if(result){
+            common.fileOpenDialog("ui._fileOpenStart").then(function(res) {
+              _this._fileOpenStart(res.filepath);
+            });
+          }
+        });
+    }
+    else{
+      common.fileOpenDialog("ui._fileOpenStart").then(function(res) {
+        _this._fileOpenStart(res.filepath);
+      });
+    }
+  },
   fileOpen(){
     let _this = this;
     let path = new URL(window.location).searchParams.get("path");
     if(path){
-      confirm(window.vm.$i18n.t("menu.file_close_before_open"), "__menu__fileOpen")
+      confirm(window.vm.$i18n.t("menu.file_close_before_import"),  { title: 'LightSheet', type: 'warning' })
         .then(function(result){
           if(result){
             common.fileOpenDialog("ui._fileOpenStart").then(function(res) {
@@ -33,7 +98,7 @@ export default {
   _fileOpenEnd(){
     setTimeout(function(){
       let path = new URL(window.location).searchParams.get("path");
-      window.vm.$router.push({ path: 'sheet', query: { path: _filepath }});
+      router.push({ path: 'sheet', query: { path: _filepath }});
       if(path)  // if already page open, reload page(because of mounted event not work)
         window.vm.$router.go()
     }, 10);

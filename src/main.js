@@ -2,6 +2,7 @@ import 'font-awesome/css/font-awesome.min.css'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
+import { store } from "./store";
 import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify';
@@ -29,6 +30,7 @@ Vue.config.productionTip = false
 
 Vue.use(VueRouter);
 var vm = new Vue({
+  store,
   vuetify,
   i18n,
   router,

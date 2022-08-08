@@ -117,12 +117,8 @@ Vue.component("v-style", {
 });
 export default {
   components: { VueFileToolbarMenu },
-  props: {
-   menuInfo: Object,
- },
 
   data () {
-    
     return {
       compile_mode: window.__COMPILE_MODE__,
       color: "rgb(74, 238, 164)",
@@ -139,8 +135,29 @@ export default {
       Vue.prototype
       return 0;
     },
-    is_file_exort(){
-      return !this.menuInfo.file_export.disabled;
+    currentPath() {
+      return this.$store.getters.getPath;
+    },
+    is_file_import(){
+      // debugger; // eslint-disable-line no-debugger
+      if(this.currentPath == "/sheet")
+        return true;
+      return false;
+    },
+    is_file_export(){
+      if(this.currentPath == "/sheet")
+        return true;
+      return false;
+    },
+    is_file_open(){
+      if(this.currentPath == "/sheet")
+        return false;
+      return true;
+    },
+    is_file_close(){
+      if(this.currentPath == "/sheet")
+        return true;
+      return false;
     },
     // Read the API documentation about the available menu content options
     bars_content () {
@@ -149,13 +166,33 @@ export default {
         text: this.$t("menu.file"),
         menu: [
           { 
+            text: this.$t("menu.file_new") + "...", 
+            hotkey: this.isMacLike ? "command+n" : "ctrl+n",
+            click: () => { 
+              ui.fileNew();
+            },
+            id: "menu__file_new",
+            title: this.$t("menu.file_new_title"),
+          },
+          { 
             text: this.$t("menu.file_open") + "...", 
             hotkey: this.isMacLike ? "command+o" : "ctrl+o",
             click: () => { 
               ui.fileOpen();
             },
             id: "menu__file_open",
-            title: this.$t("menu.file_open__sb"),
+            title: this.$t("menu.file_open_title"),
+            disabled: !this.is_file_open
+          },
+          { 
+            text: this.$t("menu.file_close") + "...", 
+            hotkey: this.isMacLike ? "command+c" : "ctrl+c",
+            click: () => { 
+              ui.fileClose();
+            },
+            id: "menu__file_close",
+            //title: this.$t("menu.file_open_title"),
+            disabled: !this.is_file_close
           },
           { 
             text: this.$t("menu.file_save") + "...", 
@@ -165,11 +202,20 @@ export default {
             disabled: true,
           },
           { 
+            text: this.$t("menu.file_import") + "...", 
+            hotkey: this.isMacLike ? "command+i" : "ctrl+i",
+            click: () => { 
+              ui.fileImportUIDialog();
+            },
+            id: "menu__file_import",
+            disabled: !this.is_file_import
+          },
+          { 
             text: this.$t("menu.file_export") + "...", 
             click: () => { 
               ui.fileExport();
             },
-            disabled: !this.is_file_exort,
+            disabled: !this.is_file_export,
           },
           
           { is: "separator" },
@@ -334,7 +380,7 @@ export default {
       let menu = [];
       menu.push(menu_file);
       menu.push(menu_edit);
-      console.log(" == this.compile_mode ==" + this.compile_mode);
+      console.log("==== this.compile_mode : " + this.compile_mode + " ====");
       if(this.compile_mode == "debug"){
         menu.push(menu_format);
         menu.push(menu_debug);

@@ -8,6 +8,13 @@ Vue.use(Vuetify);
 export default new Vuetify({
   icons: {
     iconfont: ['fa4', 'mdi'],
+    values: {
+      clear: 'mdi-close-circle',
+      dropdown: 'mdi-triangle-small-down',
+      checkboxOn: 'mdi-checkbox-marked',
+      checkboxOff: 'mdi-checkbox-blank-outline',
+      delete: 'mdi-close-circle',
+    }
   },
   theme:{
     themes: {

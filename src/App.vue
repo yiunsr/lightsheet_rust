@@ -1,6 +1,7 @@
 <template>
   <v-app ref="app" 
     :style="{background: $vuetify.theme.themes[themeMode].background}">
+    <AppDialog />
     <v-app-bar
       app
       height="36px"
@@ -10,7 +11,7 @@
       <v-toolbar-title style="width:36px;text-align:center" 
         class="font-weight-black rounded secondary ">LS</v-toolbar-title>
 
-      <AppMenu :menu-info="menuinfo" />
+      <AppMenu />
       <v-spacer></v-spacer>
       <v-btn
         href="#" onclick="location.reload();"
@@ -135,13 +136,13 @@
 
 <script>
 import AppMenu from './components/AppMenu';
-
+import AppDialog from './components/AppDialog';
 
 export default {
   name: 'App',
 
   components: {
-    AppMenu
+    AppMenu, AppDialog
   },
 
   data: () => ({

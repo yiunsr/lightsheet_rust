@@ -6,7 +6,7 @@ use tauri::{self, Window, generate_context, window};
 use tauri::{plugin::{Builder, TauriPlugin}, Runtime};
 use tauri::command;
 
-use std::fmt::format;
+use std::fs;
 use std::sync::Arc;
 use std::cell::RefCell;
 use std::time::Instant;
@@ -43,37 +43,38 @@ fn get_window_id(window: &Window) -> u32{
 }
 
 #[command]
-fn alert(msg: String){
-  tfd::message_box_ok("Lightsheet", &msg, tfd::MessageBoxIcon::Info);
-}
-
-#[command]
-fn confirm(msg: String) -> Result<String, APIError>{
-  let result = tfd::message_box_yes_no("Lightsheet", &msg, tfd::MessageBoxIcon::Info, tfd::YesNo::Yes);
-  let mut js = String::new();
-  if result == tfd::YesNo::Yes{
-    js.push_str("true;");
-  }
-  else{
-    js.push_str("false;");
-  }
-  Ok(js)
-}
-
-#[command]
-fn prompt(msg: String, default_input: String) -> Result<Value, APIError>{
-  let result = match tfd::input_box("Lightsheet",&msg, &default_input){
-    Some(s)=> Value::String(s),
-    None => Value::Null
-  };
-  Ok(result)
-}
-
-#[command]
 fn get_label(window: Window) -> Result<String, APIError>{
   let label = window.label();
   let res_json = format!(r#"{{"result": {}, "label": "{}"}}"#, true, label);
   Ok(res_json)
+}
+
+
+#[command]
+async fn file_close(window: Window){
+  let table_manager = get_table_manager();
+  table_manager.close();
+}
+
+#[command]
+async fn file_new(window: Window, path: String){
+  let window_id = get_window_id(&window);
+  if window_id == 1 {
+    let _ = fs::remove_file(path.clone());
+    let manager = manager::TableManager::new(path);
+    unsafe{
+      TABLE_MANAGER_WRAP = Some(manager);
+    }
+  }
+  let table_manager = get_table_manager();
+  table_manager.new_table(window_id);
+}
+
+#[command]
+async fn file_get_info(path: String) -> Result<Value, APIError>{
+  let table_manager = get_table_manager();
+  let v = table_manager.get_file_info(path);
+  Ok(v)
 }
 
 #[command]
@@ -208,16 +209,12 @@ async fn cell_edit_done(window: Window, row_id: u32, col_index: u32, old_value: 
 
 
 fn main() {
-  let manager = manager::TableManager::new();
-  unsafe{
-    TABLE_MANAGER_WRAP = Some(manager);
-  }
 
   let context = tauri::generate_context!("./tauri.conf.json");
   let app = tauri::Builder::default().plugin(init())
     //.menu(tauri::Menu::os_default(&context.package_info().name))
     .invoke_handler(tauri::generate_handler![
-      alert, confirm, prompt, file_open_dialog, file_open, set_title, get_label,
+      file_new, file_get_info, file_close, file_open_dialog, file_open, set_title, get_label,
       get_table_info, get_rows, add_rows, cell_edit_done, file_export,
       open_default_browser_url
     ]);
